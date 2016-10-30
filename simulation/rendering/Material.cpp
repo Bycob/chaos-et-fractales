@@ -15,8 +15,12 @@ Material::Material(float diffuseR, float diffuseG, float diffuseB, float specula
 
 }
 
-void Material::setTexture(Texture texture) {
-    this->texture = texture;
+void Material::removeAllTextures() {
+    this->textures.clear();
+}
+
+void Material::addTexture(Texture texture) {
+    this->textures.push_back(texture);
 }
 
 void Material::setDiffuse(float r, float g, float b) {
@@ -43,6 +47,14 @@ void Material::setAmbient(float r, float g, float b) {
 }
 
 void Material::pushMaterial(Context * context) {
+    glActiveTexture(GL_TEXTURE0);
+    if (this->textures.size() >= 1) {
+        glBindTexture(GL_TEXTURE_2D, this->textures[0].getID());
+    }
+    else {
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
     context->program().setUniform3f("material.ambientColor", ambientR, ambientG, ambientB);
     context->program().setUniform3f("material.diffuseColor", diffuseR, diffuseG, diffuseB);
     context->program().setUniform3f("material.specularColor", specularR, specularG, specularB);

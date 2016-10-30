@@ -17,11 +17,11 @@ public :
     Shader(const Shader &other);
     virtual ~Shader();
 
-    int getID() const {return id;}
+    GLuint getID() const {return id;}
     GLenum getShaderType() const {return shaderType;}
 private :
 
-    int id;
+    GLuint id;
     GLenum shaderType;
 
     std::shared_ptr<int> refCount;

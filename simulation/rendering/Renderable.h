@@ -18,9 +18,8 @@ public :
 
     void setPosition(float x, float y, float z);
 
-    void setMaterial(Material &material) {
-        this->material = material;
-    }
+    void setMaterial(Material &material);
+    void addTexturePath(std::string path);
 
     Material & getMaterial() {
         return this->material;
@@ -31,14 +30,19 @@ protected :
 
     void deleteBuffers();
     /// Recrée les buffers de données ainsi que le VAO,
-    ///puis bind le vertex Array pour préparer un envoi
+    /// puis bind le vertex Array pour préparer un envoi
     /// de données.
     void regenerateBuffers();
+
+    /** Recharge les textures et envoie les données à
+     * openGL*/
+    void loadTextures();
 
     //Fields
 
     float x, y, z;
     Material material;
+    std::vector<std::string> texturePaths;
 
     bool compiled = false;
     GLuint gVAO = 0;

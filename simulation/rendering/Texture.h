@@ -15,13 +15,14 @@ public :
 
     static Texture load(std::string path);
 
-    Texture();
+    Texture(int width, int height, const unsigned char* pixel,
+            GLint internalFormat = GL_RGBA, GLenum format = GL_RGBA);
     Texture(const Texture & other);
     ~Texture();
 
     GLuint getID() {return this->id;}
 private :
-    GLuint id;
+    GLuint id = 0;
     std::shared_ptr<int> instance_count;
 };
 

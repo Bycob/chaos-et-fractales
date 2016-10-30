@@ -5,6 +5,7 @@
 #ifndef RENDUOPENGL_MATERIAL_H
 #define RENDUOPENGL_MATERIAL_H
 
+#include <vector>
 #include "Texture.h"
 
 class Context;
@@ -16,7 +17,8 @@ public :
         float specularR = 1.0f, float specularG = 1.0f, float specularB = 1.0f,
         float ambientR = 0.2f, float ambientG = 0.2f, float ambientB = 0.2f);
 
-    void setTexture(Texture texture);
+    void removeAllTextures();
+    void addTexture(Texture texture);
 
     void setDiffuse(float r, float g, float b);
 
@@ -32,7 +34,7 @@ public :
     void pushMaterial(Context * context);
 
 private :
-    Texture texture;
+    std::vector<Texture> textures;
 
     float diffuseR, diffuseG, diffuseB;
     float specularR, specularG, specularB;

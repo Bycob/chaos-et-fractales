@@ -1,5 +1,7 @@
 #version 150
 
+uniform sampler2D tex;
+
 uniform mat4 model;
 uniform vec3 cameraPos;
 
@@ -24,6 +26,7 @@ uniform struct {
 
 in vec3 fragVert;
 in vec3 fragNorm;
+in vec2 fragTexCoord;
 
 out vec4 finalColor;
 
@@ -83,6 +86,9 @@ void main() {
         finalColor = vec4(pow(ambientIntensity + attenuation * (diffuseIntensity + specularIntensity), gamma), 1);
     }
     else {
-        finalColor = vec4(material.diffuseColor, 1);
+        float ratio = dot(fragToCam, normal);
+        finalColor = vec4((material.diffuseColor * ratio + material.ambientColor * (1 - ratio)) * 2, 1);
     }
+
+    finalColor *= texture(tex, fragTexCoord);
 }

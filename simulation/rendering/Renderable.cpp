@@ -10,6 +10,7 @@
 #include "Scene.h"
 #include "Renderable.h"
 #include "Context.h"
+#include "Texture.h"
 #include "Program.h"
 
 
@@ -25,6 +26,16 @@ void Renderable::setPosition(float x, float y, float z) {
     this->x = x;
     this->y = y;
     this->z = z;
+}
+
+void Renderable::setMaterial(Material &material) {
+    this->material = material;
+    this->compiled = false;
+}
+
+void Renderable::addTexturePath(std::string path) {
+    this->texturePaths.push_back(path);
+    this->compiled = false;
 }
 
 void Renderable::regenerateBuffers() {
@@ -61,6 +72,15 @@ void Renderable::deleteBuffers() {
         this->gVAO = 0;
     }
 }
+
+void Renderable::loadTextures() {
+    this->material.removeAllTextures();
+
+    for (std::string & path : this->texturePaths) {
+        this->material.addTexture(Texture::load(path));
+    }
+}
+
 
 
 //          -----    -- -- --             ----------------
@@ -236,4 +256,6 @@ void RenderableSphere::buildModelData(Context *context) {
 
     this->verticesCount = size;
     compiled = true;
+
+    this->loadTextures();
 }

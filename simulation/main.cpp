@@ -93,12 +93,16 @@ void createScene() {
 
     //Rendus
     auto moonRender = std::make_shared<RenderableSphere>(0.8, 64, 64);
+    moonRender->addTexturePath("assets/moon.png");
 
     auto earthRender = std::make_shared<RenderableSphere>(0.25, 64, 64);
-    earthRender->getMaterial().setDiffuse(0.5f, 0.3f, 0.1f);
+    earthRender->getMaterial().setDiffuse(1.0f, 1.0f, 1.0f);
+    earthRender->addTexturePath("assets/earth.png");
 
     auto sunRender = std::make_shared<RenderableSphere>(2, 64, 64);
-    sunRender->getMaterial().setDiffuse(0.85f, 0.75f, 0.1f);
+    sunRender->getMaterial().setDiffuse(1.0f, 1.0f, 1.0f);
+    sunRender->getMaterial().setAmbient(0.85f, 0.25f, 0.1f);
+    sunRender->addTexturePath("assets/sun.png");
     sunRender->getMaterial().setEmit(true);
 
     //Physique
