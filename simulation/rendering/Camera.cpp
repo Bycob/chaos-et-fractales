@@ -108,10 +108,13 @@ glm::vec3 Camera::getUp() {
 }
 
 void Camera::rotateZ(float degrees) {
-    float radians = (float) (degrees * (M_PI / 180.0));
+    const double radians = (float) (degrees * (M_PI / 180.0));
 
-    this->eyeX = (float) (this->eyeX * cos(radians) - this->eyeY * sin(radians));
-    this->eyeY = (float) (this->eyeX * sin(radians) + this->eyeY * cos(radians));
+    double diffX = this->eyeX - this->centerX;
+    double diffY = this->eyeY - this->centerY;
+
+    this->eyeX = (float) (diffX * cos(radians) - diffY * sin(radians) + this->centerX);
+    this->eyeY = (float) (diffX * sin(radians) + diffY * cos(radians) + this->centerY);
 }
 
 void Camera::travelEye(float eyeX, float eyeY, float eyeZ, float seconds) {
