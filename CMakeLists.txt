@@ -28,3 +28,7 @@ target_link_libraries(simulation glfw X11 pthread)
 add_custom_command(TARGET simulation PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/simulation/rendering/shaders $<TARGET_FILE_DIR:simulation>/shaders)
+
+add_custom_command(TARGET simulation PRE_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_SOURCE_DIR}/assets/ $<TARGET_FILE_DIR:simulation>/assets/)

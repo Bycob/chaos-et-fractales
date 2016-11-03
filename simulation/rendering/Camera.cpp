@@ -107,14 +107,63 @@ glm::vec3 Camera::getUp() {
     return glm::vec3(upX, upY, upZ);
 }
 
+void Camera::moveCameraByCenterPoint(float newCenterX, float newCenterY, float newCenterZ) {
+    const float moveX = newCenterX - this->centerX;
+    const float moveY = newCenterY - this->centerY;
+    const float moveZ = newCenterZ - this->centerZ;
+
+    this->eyeX += moveX;
+    this->eyeY += moveY;
+    this->eyeZ += moveZ;
+
+    this->centerX = newCenterX;
+    this->centerY = newCenterY;
+    this->centerZ = newCenterZ;
+}
+
 void Camera::rotateZ(float degrees) {
     const double radians = (float) (degrees * (M_PI / 180.0));
+    const double c = cos(radians);
+    const double s = sin(radians);
 
-    double diffX = this->eyeX - this->centerX;
-    double diffY = this->eyeY - this->centerY;
+    const double diffX = this->eyeX - this->centerX;
+    const double diffY = this->eyeY - this->centerY;
 
-    this->eyeX = (float) (diffX * cos(radians) - diffY * sin(radians) + this->centerX);
-    this->eyeY = (float) (diffX * sin(radians) + diffY * cos(radians) + this->centerY);
+    this->eyeX = (float) (diffX * c - diffY * s + this->centerX);
+    this->eyeY = (float) (diffX * s + diffY * c + this->centerY);
+}
+
+void Camera::rotateUpDown(float degrees) {
+    const double radians = (float) (degrees * (M_PI / 180.0));
+    const double c = cos(radians);
+    const double s = sin(radians);
+
+    const double diffX = this->eyeX - this->centerX;
+    const double diffY = this->eyeY - this->centerY;
+    const double diffZ = this->eyeZ - this->centerZ;
+
+    const double radius = sqrt(diffX * diffX + diffY * diffY);
+    const double radiusPrime = radius * c - diffZ * s;
+
+    glm::vec3 newDiff(radiusPrime / radius * diffX, radiusPrime / radius * diffY, radius * s + diffZ * c);
+
+    if (glm::abs(glm::dot(newDiff, getUp())) < glm::length(newDiff) * 0.99) {
+        this->eyeX = newDiff.x + this->centerX;
+        this->eyeY = newDiff.y + this->centerY;
+        this->eyeZ = newDiff.z + this->centerZ;
+    }
+}
+
+void Camera::zoom(float factor) {
+    const double diffX = (this->eyeX - this->centerX) * factor;
+    const double diffY = (this->eyeY - this->centerY) * factor;
+    const double diffZ = (this->eyeZ - this->centerZ) * factor;
+
+    if (diffX * diffX + diffY * diffY + diffZ * diffZ > 0.0001 || factor >= 1) {
+        this->eyeX = (float) (this->centerX + diffX);
+        this->eyeY = (float) (this->centerY + diffY);
+        this->eyeZ = (float) (this->centerZ + diffZ);
+    }
 }
 
 void Camera::travelEye(float eyeX, float eyeY, float eyeZ, float seconds) {

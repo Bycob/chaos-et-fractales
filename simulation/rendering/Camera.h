@@ -43,7 +43,21 @@ public :
     glm::vec3 getCenter();
     glm::vec3 getUp();
 
+    void moveCameraByCenterPoint(float newCenterX, float newCenterY, float newCenterZ);
+
+    /** Fait tourner la caméra du nombre de degrés indiqué
+     * vers la droite ou vers la gauche, autour du point central
+     * de la vue. Le haut est donné par l'axe Z. */
     void rotateZ(float degrees);
+    /** Fait tourner la caméra du nombre de degrés indiqué
+     * vers le haut ou vers le bas, autour du point central
+     * de la vue. Le haut est donné par l'axe Z.
+     * La caméra ne peut s'orienter trop proche de l'axe Z.*/
+    void rotateUpDown(float degrees);
+
+    /** Zoome sur le point central de la vue, du facteur passé
+     * en paramètres. */
+    void zoom(float factor);
 
     /** Déplace la caméra de sorte que son origine soit à la
      * position indiquée. Le déplacement dure le nombre de secondes
@@ -68,9 +82,9 @@ private:
     float centerX, centerY, centerZ;
     float upX, upY, upZ;
 
-    float fov = 70;
+    float fov = 60;
     float ratio = 1;
-    float zNear = 0.1, zFar = 100;
+    float zNear = 0.1, zFar = 1000;
 
     std::unique_ptr<Traveling> _traveling = nullptr;
 };

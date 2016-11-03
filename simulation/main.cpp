@@ -27,11 +27,12 @@ struct Object3D {
 };
 
 std::string DATE;
+int currentPlanet = 0;
 std::unique_ptr<Scene> scene = nullptr;
 std::unique_ptr<World> world = nullptr;
 std::vector<Object3D> objects;
 
-void addObject(double mass, double x, double y, double z, double size);
+void addObject(std::string name, double mass, double x, double y, double z, double size);
 
 /** Ajoute un objet 3D à la scene et au monde physique. */
 void addObject(Object3D object);
@@ -54,6 +55,7 @@ void mainLoop(GLFWwindow * window, Context *context);
 
 void glfwErrorCallback(int error, const char* description);
 void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
+void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 
 //MAIN
@@ -95,7 +97,7 @@ void createScene() {
     auto moonRender = std::make_shared<RenderableSphere>(0.8, 64, 64);
     moonRender->addTexturePath("assets/moon.png");
 
-    auto earthRender = std::make_shared<RenderableSphere>(0.25, 64, 64);
+    auto earthRender = std::make_shared<RenderableSphere>(0.2, 64, 64);
     earthRender->getMaterial().setDiffuse(1.0f, 1.0f, 1.0f);
     earthRender->addTexturePath("assets/earth.png");
 
@@ -122,16 +124,16 @@ void createScene() {
 
     //Ajout des objets
     //addObject({"moon", moonBody, moonRender});
-    addObject({"earth", earthBody, earthRender});
     addObject({"sun", sunBody, sunRender});
+    addObject({"earth", earthBody, earthRender});
 }
 
-void addObject(double mass, double x, double y, double z, double size) {
+void addObject(std::string name, double mass, double x, double y, double z, double size) {
     auto sphereRender = std::make_shared<RenderableSphere>(size, 64, 64);
     sphereRender->getMaterial().setDiffuse(0.85f, 0.75f, 0.1f);
     auto sphereBody = std::make_shared<Body>(mass);
     sphereBody->setPosition(x, y, z);
-    addObject({"sun", sphereBody, sphereRender});
+    addObject({name, sphereBody, sphereRender});
 }
 
 void addObject(Object3D object) {
@@ -166,6 +168,7 @@ void graphicThread() {
     glfwSwapInterval(1);
 
     glfwSetKeyCallback(window, glfwKeyCallback);
+    glfwSetScrollCallback(window, glfwScrollCallback);
 
     //Création du contexte
     Context context(window);
@@ -194,17 +197,53 @@ void graphicThread() {
 
 void mainLoop(GLFWwindow *window, Context *context) {
 
+    /*
+     * TODO nouveaux controles de la caméra !
+     * -> LEFT et RIGHT pour tourner autour de l'axe UP (quasi toujours vers le haut)
+     * -> UP et DOWN pour faire pivoter la position de la cam vers le haut ou le bas (limite aux extremes)
+     * -> 0 pour la vue de dessus centrée sur 0, 0
+     * -> En vue de dessus, LEFT et RIGHT font tourner l'axe UP selon l'axe Z.
+     * -> vue de côté pour chacun des astres sur les touches 1, 2, 3, 4 ...
+     * -> Rotation molette pour le zoom.
+     */
+
     //Controles
     int rightKey = glfwGetKey(window, GLFW_KEY_RIGHT);
     int leftKey = glfwGetKey(window, GLFW_KEY_LEFT);
+    int upKey = glfwGetKey(window, GLFW_KEY_UP);
+    int downKey = glfwGetKey(window, GLFW_KEY_DOWN);
 
-    if (scene->camera().isTraveling());
-    else if (rightKey == GLFW_PRESS && leftKey != GLFW_PRESS) {
-        scene->camera().rotateZ(180.0f / 50.0f);
+    if (!scene->camera().isTraveling()) {
+        //Mise à jour en fonction de la planete actuelle
+        if (currentPlanet != -1) {
+            std::shared_ptr<Body> planetBody = objects[currentPlanet].body;
+            scene->camera().moveCameraByCenterPoint((float) planetBody->getX(), (float) planetBody->getY(), (float) planetBody->getZ());
+        }
+
+        glm::vec3 cameraUp = scene->camera().getUp();
+
+        if (cameraUp.x == 0 && cameraUp.y == 0) {
+            if (rightKey == GLFW_PRESS && leftKey != GLFW_PRESS) {
+                scene->camera().rotateZ(180.0f / 70.0f);
+            }
+            else if (leftKey == GLFW_PRESS && rightKey != GLFW_PRESS) {
+                scene->camera().rotateZ(- 180.0f / 70.0f);
+            }
+
+            if (upKey == GLFW_PRESS && downKey != GLFW_PRESS) {
+                scene->camera().rotateUpDown(180.0f / 70.0f);
+            }
+            else if (downKey == GLFW_PRESS && upKey != GLFW_PRESS) {
+                scene->camera().rotateUpDown(- 180.0f / 70.0f);
+            }
+        }
+        else if (cameraUp.z == 0){
+
+        }
+
     }
-    else if (leftKey == GLFW_PRESS && rightKey != GLFW_PRESS) {
-        scene->camera().rotateZ(- 180.0f / 50.0f);
-    }
+
+
 
     //Mise à jour du monde (précision ~ 1h)
     world->step(0.02, 5); //TODO step tient compte du temps de calcul -> pour plus de précision
@@ -235,18 +274,38 @@ void glfwErrorCallback(int error, const char* description) {
 
 void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 
-    if (key == GLFW_KEY_KP_0 && action == GLFW_PRESS) {
-        auto traveling = std::make_unique<Traveling>(
-                scene->camera(), 0, 0, 30, 0, 0, 0, 0, 1, 0
-        );
-        traveling->setDuration(0.5f);
-        scene->camera().traveling(traveling);
+    if (action == GLFW_PRESS) {
+        if (key == GLFW_KEY_KP_0) {
+            currentPlanet = -1;
+
+            auto traveling = std::make_unique<Traveling>(
+                    scene->camera(), 0, 0, 30, 0, 0, 0, 0, 1, 0
+            );
+            traveling->setDuration(0.5f);
+            scene->camera().traveling(traveling);
+        }
+        else if (key >= GLFW_KEY_KP_1 && key <= GLFW_KEY_KP_9){
+            int targetPlanet = key - GLFW_KEY_KP_1;
+
+            if (targetPlanet < objects.size()) {
+                currentPlanet = targetPlanet;
+
+                std::shared_ptr<Body> planetBody = objects[currentPlanet].body;
+
+                //TODO le 15 en fonction du radius de la planète.
+
+                auto traveling = std::make_unique<Traveling>(
+                        scene->camera(),
+                        planetBody->getX() + 15, planetBody->getY() + 15, planetBody->getZ() + 15,
+                        planetBody->getX(), planetBody->getY(), planetBody->getZ(), 0, 0, 1
+                );
+                traveling->setDuration(0.5f);
+                scene->camera().traveling(traveling);
+            }
+        }
     }
-    else if (key == GLFW_KEY_KP_1 && action == GLFW_PRESS) {
-        auto traveling = std::make_unique<Traveling>(
-                scene->camera(), 15, 15, 15, 0, 0, 0, 0, 0, 1
-        );
-        traveling->setDuration(0.5f);
-        scene->camera().traveling(traveling);
-    }
+}
+
+void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
+    scene->camera().zoom((float) pow(1.2, - yoffset));
 }
