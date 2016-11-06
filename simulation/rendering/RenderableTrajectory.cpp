@@ -14,12 +14,15 @@ void RenderableTrajectory::addPoint(float x, float y, float z) {
     while (points.size() > maxPointCount) {
         points.pop_front();
     }
+
+    this->compiled = false;
 }
 
 void RenderableTrajectory::render(Context *context) {
+    if (!this->compiled) buildRenderData(context);
 
 }
 
 void RenderableTrajectory::buildRenderData(Context *context) {
-
+    
 }

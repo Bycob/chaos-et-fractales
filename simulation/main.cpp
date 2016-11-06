@@ -16,14 +16,16 @@
 #include "rendering/RenderableSphere.h"
 #include "physics/World.h"
 #include "physics/Body.h"
+#include "rendering/RenderableTrajectory.h"
 
 //DECLARATIONS
 
-struct Object3D {
-    Object3D(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableModel> render);
+struct Planet {
+    Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render);
     std::string name;
     std::shared_ptr<Body> body;
-    std::shared_ptr<RenderableModel> render;
+    std::shared_ptr<RenderableSphere> render;
+    std::shared_ptr<RenderableTrajectory> trajectory;
     FileBuffer buffer;
 };
 
@@ -31,12 +33,12 @@ std::string DATE;
 int currentPlanet = 0;
 std::unique_ptr<Scene> scene = nullptr;
 std::unique_ptr<World> world = nullptr;
-std::vector<Object3D> objects;
+std::vector<Planet> objects;
 
-void addObject(std::string name, double mass, double x, double y, double z, double size);
+void addPlanet(std::string name, double mass, double x, double y, double z, double size);
 
 /** Ajoute un objet 3D à la scene et au monde physique. */
-void addObject(Object3D object);
+void addPlanet(Planet planet);
 
 /** Initialise la scène ainsi que le monde physique. */
 void createScene();
@@ -70,7 +72,7 @@ int main(int argc, char** argv) {
 
     graphicThread();
 
-    for (Object3D &object : objects) {
+    for (Planet &object : objects) {
         object.buffer.writeData();
     }
 
@@ -80,15 +82,13 @@ int main(int argc, char** argv) {
 
 //IMPLEMENTATIONS
 
-Object3D::Object3D(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableModel> render)
+Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render)
     : name(name), body(body), render(render), buffer(name + "_" + DATE) {
-
 
 }
 
 
 void createScene() {
-    world = std::make_unique<World>();
     scene = std::make_unique<Scene>();
 
     Light light(LIGHT_POINT, 0, 0, 0);
@@ -118,6 +118,7 @@ void createScene() {
     //Physique
 
     //dist 1e10 m, mass 1e21 kg, tps 1e6 s, vit 1e4 m.s-1 -> G *= 1e3 (- 10*3 + 21 + 6*2)
+    world = std::make_unique<World>();
     world->setGravityConstant(6.7e-11 * 1e3);
 
     auto moonBody = std::make_shared<Body>(73.0);
@@ -139,25 +140,25 @@ void createScene() {
     auto sunBody = std::make_shared<Body>(2e9);
 
     //Ajout des objets
-    //addObject({"moon", moonBody, moonRender});
-    addObject({"sun", sunBody, sunRender});
-    addObject({"earth", earthBody, earthRender});
-    addObject({"mars", marsBody, marsRender});
-    addObject({"jupiter", jupiterBody, jupiterRender});
+    //addPlanet({"moon", moonBody, moonRender});
+    addPlanet({"sun", sunBody, sunRender});
+    addPlanet({"earth", earthBody, earthRender});
+    addPlanet({"mars", marsBody, marsRender});
+    addPlanet({"jupiter", jupiterBody, jupiterRender});
 }
 
-void addObject(std::string name, double mass, double x, double y, double z, double size) {
+void addPlanet(std::string name, double mass, double x, double y, double z, double size) {
     auto sphereRender = std::make_shared<RenderableSphere>(size, 64, 64);
     sphereRender->getMaterial().setDiffuse(0.85f, 0.75f, 0.1f);
     auto sphereBody = std::make_shared<Body>(mass);
     sphereBody->setPosition(x, y, z);
-    addObject({name, sphereBody, sphereRender});
+    addPlanet({name, sphereBody, sphereRender});
 }
 
-void addObject(Object3D object) {
-    objects.push_back(object);
-    if (object.body != nullptr) world->addObject(object.body);
-    if (object.render != nullptr) scene->addObject(object.render);
+void addPlanet(Planet planet) {
+    objects.push_back(planet);
+    if (planet.body != nullptr) world->addObject(planet.body);
+    if (planet.render != nullptr) scene->addObject(planet.render);
 }
 
 
@@ -267,7 +268,7 @@ void mainLoop(GLFWwindow *window, Context *context) {
     world->step(0.02, 50); //TODO step tient compte du temps de calcul -> pour plus de précision
     // -> Sachant que les mesures effectuées sont enregistrées avec le bon temps dans le fichier.
 
-    for (Object3D &object : objects) {
+    for (Planet &object : objects) {
         auto &body = object.body;
 
         if (body != nullptr) {
