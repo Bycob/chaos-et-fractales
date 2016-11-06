@@ -13,16 +13,17 @@
 #include "rendering/Context.h"
 #include "rendering/Scene.h"
 #include "rendering/Renderable.h"
+#include "rendering/RenderableSphere.h"
 #include "physics/World.h"
 #include "physics/Body.h"
 
 //DECLARATIONS
 
 struct Object3D {
-    Object3D(std::string name, std::shared_ptr<Body> body, std::shared_ptr<Renderable> render);
+    Object3D(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableModel> render);
     std::string name;
     std::shared_ptr<Body> body;
-    std::shared_ptr<Renderable> render;
+    std::shared_ptr<RenderableModel> render;
     FileBuffer buffer;
 };
 
@@ -79,7 +80,7 @@ int main(int argc, char** argv) {
 
 //IMPLEMENTATIONS
 
-Object3D::Object3D(std::string name, std::shared_ptr<Body> body, std::shared_ptr<Renderable> render)
+Object3D::Object3D(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableModel> render)
     : name(name), body(body), render(render), buffer(name + "_" + DATE) {
 
 
@@ -263,7 +264,7 @@ void mainLoop(GLFWwindow *window, Context *context) {
 
 
     //Mise à jour du monde (précision ~ 1h)
-    world->step(2, 5000); //TODO step tient compte du temps de calcul -> pour plus de précision
+    world->step(0.02, 50); //TODO step tient compte du temps de calcul -> pour plus de précision
     // -> Sachant que les mesures effectuées sont enregistrées avec le bon temps dans le fichier.
 
     for (Object3D &object : objects) {
