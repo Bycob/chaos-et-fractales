@@ -1,4 +1,4 @@
-#version 330
+#version 150
 
 uniform mat4 projection;
 uniform mat4 camera;
@@ -12,7 +12,6 @@ out vec3 fragNorm;
 
 void main() {
     //Passage au fragment shader
-    fragTexCoord = vertTexCoord;
     fragVert = vert;
     fragNorm = vertNorm;
 
