@@ -1,5 +1,6 @@
 #version 150
 
+uniform int useTextures;
 uniform sampler2D tex;
 
 uniform mat4 model;
@@ -52,15 +53,14 @@ void main() {
         lightVect = position - lightPos;
     }
 
-    //atténuation en mode POINT_LIGHT
-    float attenuation = 1;
-    if (light.type == POINT_LIGHT) {
-        attenuation *= 1 / (1 + lightVectLength * lightVectLength * 0.1);
-    }
-
     lightVectLength = length(lightVect);
     lightVect = normalize(lightVect);
 
+    //atténuation en mode POINT_LIGHT
+    float attenuation = 1;
+    if (light.type == POINT_LIGHT) {
+        attenuation *= 1 / (1 + lightVectLength * lightVectLength * 0);
+    }
 
     if (material.emit == 0) {
         //Calcul de l'effet de la lumière sur le matériau
@@ -90,5 +90,7 @@ void main() {
         finalColor = vec4((material.diffuseColor * ratio + material.ambientColor * (1 - ratio)) * 2, 1);
     }
 
-    finalColor *= texture(tex, fragTexCoord);
+    if (useTextures == 1) {
+        finalColor *= texture(tex, fragTexCoord);
+    }
 }

@@ -101,6 +101,13 @@ void createScene() {
     earthRender->getMaterial().setDiffuse(1.0f, 1.0f, 1.0f);
     earthRender->addTexturePath("assets/earth.png");
 
+    auto jupiterRender = std::make_shared<RenderableSphere>(0.5, 64, 64);
+    jupiterRender->getMaterial().setDiffuse(1.0f, 1.0f, 1.0f);
+    jupiterRender->addTexturePath("assets/jupiter.png");
+
+    auto marsRender = std::make_shared<RenderableSphere>(0.4, 64, 64);
+    marsRender->getMaterial().setDiffuse(0.8f, 0.2f, 0.2f);
+
     auto sunRender = std::make_shared<RenderableSphere>(2, 64, 64);
     sunRender->getMaterial().setDiffuse(1.0f, 1.0f, 1.0f);
     sunRender->getMaterial().setAmbient(0.85f, 0.25f, 0.1f);
@@ -109,7 +116,7 @@ void createScene() {
 
     //Physique
 
-    //1e10 m, 1e21 kg, tps 1e6 s -> G *= 1e3 (- 10*3 + 21 + 6*2)
+    //dist 1e10 m, mass 1e21 kg, tps 1e6 s, vit 1e4 m.s-1 -> G *= 1e3 (- 10*3 + 21 + 6*2)
     world->setGravityConstant(6.7e-11 * 1e3);
 
     auto moonBody = std::make_shared<Body>(73.0);
@@ -120,12 +127,22 @@ void createScene() {
     earthBody->setPosition(-15, 0, 0);
     earthBody->setSpeed(0, 2.9, 0);
 
+    auto marsBody = std::make_shared<Body>(6000.0);
+    marsBody->setPosition(0, -24.9, 0);
+    marsBody->setSpeed(2.19, 0, 0);
+
+    auto jupiterBody = std::make_shared<Body>(1.9e6);
+    jupiterBody->setPosition(0, 77.8, 0);
+    jupiterBody->setSpeed(-1.3, 0, 0);
+
     auto sunBody = std::make_shared<Body>(2e9);
 
     //Ajout des objets
     //addObject({"moon", moonBody, moonRender});
     addObject({"sun", sunBody, sunRender});
     addObject({"earth", earthBody, earthRender});
+    addObject({"mars", marsBody, marsRender});
+    addObject({"jupiter", jupiterBody, jupiterRender});
 }
 
 void addObject(std::string name, double mass, double x, double y, double z, double size) {
@@ -155,7 +172,7 @@ void graphicThread() {
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, 16);
     GLFWwindow* window = glfwCreateWindow(800, 600, "Simulation", NULL, NULL);
 
     if (!window) {
@@ -198,14 +215,14 @@ void graphicThread() {
 void mainLoop(GLFWwindow *window, Context *context) {
 
     /*
-     * TODO nouveaux controles de la caméra !
-     * -> LEFT et RIGHT pour tourner autour de l'axe UP (quasi toujours vers le haut)
-     * -> UP et DOWN pour faire pivoter la position de la cam vers le haut ou le bas (limite aux extremes)
-     * -> 0 pour la vue de dessus centrée sur 0, 0
-     * -> En vue de dessus, LEFT et RIGHT font tourner l'axe UP selon l'axe Z.
-     * -> vue de côté pour chacun des astres sur les touches 1, 2, 3, 4 ...
-     * -> Rotation molette pour le zoom.
-     */
+       TODO nouveaux controles de la caméra !
+     | -> LEFT et RIGHT pour tourner autour de l'axe UP (quasi toujours vers le haut)
+     | -> UP et DOWN pour faire pivoter la position de la cam vers le haut ou le bas (limite aux extremes)
+     | -> 0 pour la vue de dessus centrée sur 0, 0
+     + -> En vue de dessus, LEFT et RIGHT font tourner l'axe UP selon l'axe Z.
+     | -> vue de côté pour chacun des astres sur les touches 1, 2, 3, 4 ...
+     | -> Rotation molette pour le zoom.
+      */
 
     //Controles
     int rightKey = glfwGetKey(window, GLFW_KEY_RIGHT);
@@ -246,7 +263,7 @@ void mainLoop(GLFWwindow *window, Context *context) {
 
 
     //Mise à jour du monde (précision ~ 1h)
-    world->step(0.02, 5); //TODO step tient compte du temps de calcul -> pour plus de précision
+    world->step(2, 5000); //TODO step tient compte du temps de calcul -> pour plus de précision
     // -> Sachant que les mesures effectuées sont enregistrées avec le bon temps dans le fichier.
 
     for (Object3D &object : objects) {

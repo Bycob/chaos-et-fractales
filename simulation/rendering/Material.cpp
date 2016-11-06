@@ -50,9 +50,11 @@ void Material::pushMaterial(Context * context) {
     glActiveTexture(GL_TEXTURE0);
     if (this->textures.size() >= 1) {
         glBindTexture(GL_TEXTURE_2D, this->textures[0].getID());
+        context->program().setUniform1i("useTextures", 1);
     }
     else {
         glBindTexture(GL_TEXTURE_2D, 0);
+        context->program().setUniform1i("useTextures", 0);
     }
 
     context->program().setUniform3f("material.ambientColor", ambientR, ambientG, ambientB);
