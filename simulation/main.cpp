@@ -94,33 +94,30 @@ void createScene() {
     Light light(LIGHT_POINT, 0, 0, 0);
     scene->setLight(light);
 
+    //dist 1e10 m, mass 1e21 kg, tps 1e6 s, vit 1e4 m.s-1 -> G *= 1e3 (- 10*3 + 21 + 6*2)
+    world = std::make_unique<World>();
+    world->setGravityConstant(6.7e-11 * 1e3);
+
+
     //Rendus
     auto moonRender = std::make_shared<RenderableSphere>(0.8, 64, 64);
     moonRender->addTexturePath("assets/moon.png");
 
     auto earthRender = std::make_shared<RenderableSphere>(0.2, 64, 64);
-    earthRender->getMaterial().setDiffuse(1.0f, 1.0f, 1.0f);
     earthRender->addTexturePath("assets/earth.png");
 
     auto jupiterRender = std::make_shared<RenderableSphere>(0.5, 64, 64);
-    jupiterRender->getMaterial().setDiffuse(1.0f, 1.0f, 1.0f);
     jupiterRender->addTexturePath("assets/jupiter.png");
 
-    auto marsRender = std::make_shared<RenderableSphere>(0.4, 64, 64);
-    marsRender->getMaterial().setDiffuse(0.8f, 0.2f, 0.2f);
+    auto marsRender = std::make_shared<RenderableSphere>(0.15, 64, 64);
+    marsRender->addTexturePath("assets/mars.png");
 
     auto sunRender = std::make_shared<RenderableSphere>(2, 64, 64);
-    sunRender->getMaterial().setDiffuse(1.0f, 1.0f, 1.0f);
     sunRender->getMaterial().setAmbient(0.85f, 0.25f, 0.1f);
     sunRender->addTexturePath("assets/sun.png");
     sunRender->getMaterial().setEmit(true);
 
     //Physique
-
-    //dist 1e10 m, mass 1e21 kg, tps 1e6 s, vit 1e4 m.s-1 -> G *= 1e3 (- 10*3 + 21 + 6*2)
-    world = std::make_unique<World>();
-    world->setGravityConstant(6.7e-11 * 1e3);
-
     auto moonBody = std::make_shared<Body>(73.0);
     moonBody->setPosition(-20.0, 0, 0);
     moonBody->setSpeed(0, 5e-6, 0);
@@ -158,7 +155,10 @@ void addPlanet(std::string name, double mass, double x, double y, double z, doub
 void addPlanet(Planet planet) {
     objects.push_back(planet);
     if (planet.body != nullptr) world->addObject(planet.body);
-    if (planet.render != nullptr) scene->addObject(planet.render);
+    if (planet.render != nullptr) {
+        scene->addObject(planet.render);
+        planet.render->getMaterial().setSpecular(0, 0, 0);
+    }
 }
 
 

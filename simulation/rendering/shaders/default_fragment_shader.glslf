@@ -33,6 +33,14 @@ out vec4 finalColor;
 
 void main() {
     //Calcul des positions réelles des éléments de la scene
+    vec4 color;
+    if (useTextures == 1) {
+        color = texture(tex, fragTexCoord);
+    }
+    else {
+        color = vec4(1);
+    }
+
     vec3 normal = normalize(transpose(inverse(mat3(model))) * fragNorm);
     vec3 position = vec3(model * vec4(fragVert, 1));
     vec3 lightPos = light.position; //vec3(model * vec4(lightPos, 1));
@@ -67,11 +75,11 @@ void main() {
         //intensité diffuse
         float diffuseCoef = max(- dot(normal, lightVect), 0);
         vec3 diffuseIntensity = vec3(diffuseCoef);
-        diffuseIntensity *= material.diffuseColor;
+        diffuseIntensity *= material.diffuseColor * vec3(color);
 
         //intensité ambiente
         vec3 ambientIntensity = vec3(0.2);
-        ambientIntensity *= material.ambientColor;
+        ambientIntensity *= material.ambientColor * vec3(color);
 
         //intensité speculaire
         vec3 specularIntensity = vec3(0.0);
@@ -87,10 +95,6 @@ void main() {
     }
     else {
         float ratio = dot(fragToCam, normal);
-        finalColor = vec4((material.diffuseColor * ratio + material.ambientColor * (1 - ratio)) * 2, 1);
-    }
-
-    if (useTextures == 1) {
-        finalColor *= texture(tex, fragTexCoord);
+        finalColor = vec4((material.diffuseColor * ratio + material.ambientColor * (1 - ratio)) * vec3(color) * 2, 1);
     }
 }
