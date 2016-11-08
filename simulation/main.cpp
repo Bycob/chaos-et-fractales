@@ -10,19 +10,23 @@
 #include <memory>
 
 #include "FileBuffer.h"
+#include "rendering/Window.h"
 #include "rendering/Context.h"
 #include "rendering/Scene.h"
 #include "rendering/Renderable.h"
 #include "rendering/RenderableSphere.h"
+#include "rendering/RenderableTrajectory.h"
 #include "physics/World.h"
 #include "physics/Body.h"
-#include "rendering/RenderableTrajectory.h"
 
 //DECLARATIONS
 
 //#define SIMULATION_TO_COUT
 
 //TODO rajouter des constantes
+#define CLEAR_COLOR_R 3
+#define CLEAR_COLOR_G 0
+#define CLEAR_COLOR_B 24
 
 struct Planet {
     Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render);
@@ -33,18 +37,28 @@ struct Planet {
     FileBuffer buffer;
 };
 
+std::unique_ptr<Window> window;
 std::string DATE;
-int currentPlanet = 0;
+
 std::unique_ptr<Scene> scene = nullptr;
 std::unique_ptr<World> world = nullptr;
+
+int currentPlanet = 0;
 std::vector<Planet> planets;
 
-//TODO struct parameters
-bool enableGraphicalSimulation = true;
+
+struct Parameters {
+    /// Indique la planète qui est au centre du système
+    int originObject = 0;
+    /// true si les données sont envoyées par la sortie standart pour pouvoir
+    /// être exploitées par une autre application.
+    bool pipeMode = false;
+    bool enableRender = true;
+} parameters;
 
 void addPlanet(std::string name, double mass, double x, double y, double z, double size);
 
-/** Ajoute un objet 3D à la scene et au monde physique. */
+/** Ajoute une planète à la scene et au monde physique. */
 void addPlanet(Planet planet);
 
 /** Initialise la scène ainsi que le monde physique. */
@@ -59,14 +73,14 @@ void addSolarSystem();
  * la boucle principale de l'application, gère les
  * entrées sorties, puis détruit les ressources lorsque
  * l'utilisateur ferme la fenetre. */
-void graphicThread();
+void start();
 
 /** Cette méthode est appelée à chaque tour de boucle pour
  * analyser les entrées sorties, mettre à jour le monde physique
  * et dessiner la scene à l'écran. */
-void mainLoop(GLFWwindow * window, Context *context);
+void updateSimulation(GLFWwindow *window, Context *context);
+void input(GLFWwindow *window);
 
-void glfwErrorCallback(int error, const char* description);
 void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
@@ -92,9 +106,10 @@ int main(int argc, char** argv) {
     //TODO déterminer la date
     //TODO pouvoir reprendre les résultats de la simulation précédente
 
-    createScene();
+    //TODO Analyse des arguments
 
-    graphicThread();
+    createScene();
+    start();
 
     for (Planet &object : planets) {
         object.buffer.writeData();
@@ -104,7 +119,11 @@ int main(int argc, char** argv) {
 }
 
 
-//IMPLEMENTATIONS
+
+
+// CREATION DE LA SCENE
+
+
 
 Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render)
     : name(name), body(body), render(render), buffer(name + "_" + DATE),
@@ -112,7 +131,6 @@ Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<Ren
 
 
 }
-
 
 void createScene() {
     scene = std::make_unique<Scene>();
@@ -191,59 +209,88 @@ void addPlanet(Planet planet) {
 }
 
 
-void graphicThread() {
-    int width, height;
 
-    if (!glfwInit()) {
-        std::cerr << "Erreur au lancement de glfw." << std::endl;
-        return;
+
+// BOUCLE PRINCIPALE
+
+
+
+
+void start() {
+    window = std::unique_ptr<Window>();
+
+    window->setKeyCallback(glfwKeyCallback);
+    window->setScrollCallback(glfwScrollCallback);
+
+    glClearColor(CLEAR_COLOR_R / 255.0f, CLEAR_COLOR_G / 255.0f, CLEAR_COLOR_B / 255.0f, 1);
+
+    while (!window->shouldClose()) {
+        updateSimulation(window->window(), window->context());
+
+        if (parameters.enableRender) {
+            window->setupFrame();
+            input(window->window());
+            scene->render(window->context());
+
+            window->finalizeFrame();
+            usleep(20000);
+        }
     }
 
-    glfwSetErrorCallback(glfwErrorCallback);
-
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-    glfwWindowHint(GLFW_SAMPLES, 16);
-    GLFWwindow* window = glfwCreateWindow(800, 600, "Simulation", NULL, NULL);
-
-    if (!window) {
-        std::cerr << "Erreur au lancement de glfw." << std::endl;
-        return;
-    }
-
-    glfwMakeContextCurrent(window);
-    gladLoadGLLoader((GLADloadproc) glfwGetProcAddress);
-    glfwSwapInterval(1);
-
-    glfwSetKeyCallback(window, glfwKeyCallback);
-    glfwSetScrollCallback(window, glfwScrollCallback);
-
-    //Création du contexte
-    Context context(window);
-
-    glEnable(GL_MULTISAMPLE);
-    glClearColor(3 / 255.0f, 0 / 255.0f, 32 / 255.0f, 1);
-
-    while (!glfwWindowShouldClose(window)) {
-
-        glfwGetFramebufferSize(window, &width, &height);
-        glViewport(0, 0, width, height);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-
-        mainLoop(window, &context);
-
-        glfwSwapBuffers(window);
-        glfwPollEvents();
-
-        if (enableGraphicalSimulation) usleep(20000);
-    }
-
-    glfwDestroyWindow(window);
-
-    glfwTerminate();
+    window->destroy();
 }
 
-void mainLoop(GLFWwindow *window, Context *context) {
+
+
+
+void updateSimulation(GLFWwindow *window, Context *context) {
+
+    //Mise à jour du monde (précision ~ 1h) t*10e6
+    const double timeScale = 2;
+    const double baseStep = 0.004;
+    world->step(timeScale, (int) (timeScale / baseStep)); //TODO step tient compte du temps de calcul -> pour plus de précision
+    // -> Sachant que les mesures effectuées sont enregistrées avec le bon temps dans le fichier.
+
+    for (Planet &planet : planets) {
+        auto &body = planet.body;
+
+        if (body != nullptr) {
+            double x = body->getX();
+            double y = body->getY();
+            double z = body->getZ();
+
+            if (parameters.originObject != -1 && planets.size() > parameters.originObject) {
+                x -= planets[parameters.originObject].body->getX();
+                y -= planets[parameters.originObject].body->getY();
+                z -= planets[parameters.originObject].body->getZ();
+            }
+
+            //Mise à jour des coordonnées de l'objet
+            planet.render->setPosition((float) x, (float) y, (float) z);
+
+            //Envoi des coordonnées dans le buffer
+            std::string separator = ";";
+            std::ostringstream stringstream;
+            stringstream << world->getTime() << separator << x << separator << y << separator << z;
+            planet.buffer.addLine(stringstream.str());
+
+            if (parameters.pipeMode) {
+                //Envoie des coordonnées sur la sortie stdout
+                std::cout << planet.name << ":" << stringstream.str() << std::endl;
+            }
+        }
+    }
+}
+
+
+
+
+//ENTREES SORTIES
+
+
+
+
+void input(GLFWwindow * window) {
 
     /*
      | -> LEFT et RIGHT pour tourner autour de l'axe UP (quasi toujours vers le haut)
@@ -261,8 +308,7 @@ void mainLoop(GLFWwindow *window, Context *context) {
 
     if (!scene->camera().isTraveling()) {
         //Mise à jour en fonction de la planete actuelle
-        if (currentPlanet != -1) {
-            //TODO check not out of bounds
+        if (currentPlanet != -1 && currentPlanet < planets.size()) {
             glm::vec3 planetGraphicalPos = planets[currentPlanet].render->getPosition();
             scene->camera().moveCameraByCenterPoint(planetGraphicalPos.x, planetGraphicalPos.y, planetGraphicalPos.z);
         }
@@ -287,47 +333,7 @@ void mainLoop(GLFWwindow *window, Context *context) {
         else if (cameraUp.z == 0){
             //TODO contrôle de la caméra en vue de dessus
         }
-
     }
-
-
-
-    //Mise à jour du monde (précision ~ 1h) t*10e6
-    const double timeScale = 2;
-    const double baseStep = 0.004;
-    world->step(timeScale, (int) (timeScale / baseStep)); //TODO step tient compte du temps de calcul -> pour plus de précision
-    // -> Sachant que les mesures effectuées sont enregistrées avec le bon temps dans le fichier.
-
-    for (Planet &planet : planets) {
-        auto &body = planet.body;
-
-        if (body != nullptr) {
-            //TODO check la présence de la planète 0
-            double x = body->getX() - planets[0].body->getX();
-            double y = body->getY() - planets[0].body->getY();
-            double z = body->getZ() - planets[0].body->getZ();
-
-            //Mise à jour des coordonnées de l'objet
-            planet.render->setPosition((float) x, (float) y, (float) z);
-
-            //Envoi des coordonnées dans le buffer
-            std::string separator = ";";
-            std::ostringstream stringstream;
-            stringstream << world->getTime() << separator << x << separator << y << separator << z;
-            planet.buffer.addLine(stringstream.str());
-
-#ifdef SIMULATION_TO_COUT //TODO to parameter
-            std::cout << planet.name << ":" << stringstream.str() << std::endl;
-#endif
-        }
-    }
-
-    if (enableGraphicalSimulation) scene->render(context);
-}
-
-//Declaration des callbacks
-void glfwErrorCallback(int error, const char* description) {
-    std::cerr << "There was a glfw error : " << description << std::endl;
 }
 
 void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
