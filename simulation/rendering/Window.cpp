@@ -47,6 +47,10 @@ Window::~Window() {
 }
 
 void Window::destroy() {
+    if (_destroyed) return;
+
+    _destroyed = true;
+
     glfwDestroyWindow(_window);
     glfwTerminate(); //~~~~~~~
 }

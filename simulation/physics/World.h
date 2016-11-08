@@ -5,6 +5,8 @@
 #ifndef RENDUOPENGL_WORLD_H
 #define RENDUOPENGL_WORLD_H
 
+#define GRAVITY_CONSTANT 6.7e-11
+
 #include <vector>
 #include <memory>
 
@@ -30,7 +32,7 @@ private :
     std::vector<std::shared_ptr<Body>> bodies;
 
     ///Ce champs contient la valeur de la constante universelle de gravitation.
-    double G = 6.7e-11;
+    double G = GRAVITY_CONSTANT;
 
     /// Ce champ comptabilise le temps écoulé depuis la naissance du monde.
     double time;

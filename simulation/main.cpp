@@ -19,14 +19,15 @@
 #include "physics/World.h"
 #include "physics/Body.h"
 
-//DECLARATIONS
-
-//#define SIMULATION_TO_COUT
-
 //TODO rajouter des constantes
 #define CLEAR_COLOR_R 3
 #define CLEAR_COLOR_G 0
 #define CLEAR_COLOR_B 24
+
+
+
+
+//DECLARATIONS
 
 struct Planet {
     Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render);
@@ -37,15 +38,17 @@ struct Planet {
     FileBuffer buffer;
 };
 
-std::unique_ptr<Window> window;
-std::string DATE;
-
-std::unique_ptr<Scene> scene = nullptr;
-std::unique_ptr<World> world = nullptr;
-
 int currentPlanet = 0;
 std::vector<Planet> planets;
 
+void addPlanet(std::string name, double mass, double x, double y, double z, double size);
+/** Ajoute une planète à la scene et au monde physique. */
+void addPlanet(Planet planet);
+
+
+
+std::unique_ptr<Window> window;
+std::string DATE;
 
 struct Parameters {
     /// Indique la planète qui est au centre du système
@@ -54,18 +57,24 @@ struct Parameters {
     /// être exploitées par une autre application.
     bool pipeMode = false;
     bool enableRender = true;
+
+    int fps = 50;
+    /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
+    /// lorsqu'il s'écoule 1 seconde.
+    double timeScale = 100;
+    double physicalStep = 0.004;
 } parameters;
 
-void addPlanet(std::string name, double mass, double x, double y, double z, double size);
 
-/** Ajoute une planète à la scene et au monde physique. */
-void addPlanet(Planet planet);
+
+std::unique_ptr<Scene> scene = nullptr;
+std::unique_ptr<World> world = nullptr;
 
 /** Initialise la scène ainsi que le monde physique. */
 void createScene();
-
 /** J'ajoute le système solaire à la scène ! */
 void addSolarSystem();
+
 
 
 /** Cette méthode est le coeur du thread graphique,
@@ -79,8 +88,10 @@ void start();
  * analyser les entrées sorties, mettre à jour le monde physique
  * et dessiner la scene à l'écran. */
 void updateSimulation(GLFWwindow *window, Context *context);
-void input(GLFWwindow *window);
 
+
+
+void input(GLFWwindow *window);
 void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
@@ -124,14 +135,6 @@ int main(int argc, char** argv) {
 // CREATION DE LA SCENE
 
 
-
-Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render)
-    : name(name), body(body), render(render), buffer(name + "_" + DATE),
-      trajectory(std::make_shared<RenderableTrajectory>()) {
-
-
-}
-
 void createScene() {
     scene = std::make_unique<Scene>();
 
@@ -140,7 +143,7 @@ void createScene() {
 
     //dist 1e10 m, mass 1e21 kg, tps 1e6 s, vit 1e4 m.s-1 -> G *= 1e3 (- 10*3 + 21 + 6*2)
     world = std::make_unique<World>();
-    world->setGravityConstant(6.7e-11 * 1e3);
+    world->setGravityConstant(GRAVITY_CONSTANT * 1e3);
 
     addSolarSystem();
 }
@@ -191,6 +194,17 @@ void addSolarSystem() {
     addPlanet({"jupiter", jupiterBody, jupiterRender});
 }
 
+
+// -----
+
+Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render)
+        : name(name), body(body), render(render), buffer(name + "_" + DATE),
+          trajectory(std::make_shared<RenderableTrajectory>()) {
+
+
+}
+
+
 void addPlanet(std::string name, double mass, double x, double y, double z, double size) {
     auto sphereRender = std::make_shared<RenderableSphere>(size, 64, 64);
     sphereRender->getMaterial().setDiffuse(0.85f, 0.75f, 0.1f);
@@ -217,7 +231,7 @@ void addPlanet(Planet planet) {
 
 
 void start() {
-    window = std::unique_ptr<Window>();
+    window = std::make_unique<Window>();
 
     window->setKeyCallback(glfwKeyCallback);
     window->setScrollCallback(glfwScrollCallback);
@@ -246,8 +260,8 @@ void start() {
 void updateSimulation(GLFWwindow *window, Context *context) {
 
     //Mise à jour du monde (précision ~ 1h) t*10e6
-    const double timeScale = 2;
-    const double baseStep = 0.004;
+    const double timeScale = parameters.timeScale / parameters.fps;
+    const double baseStep = parameters.physicalStep;
     world->step(timeScale, (int) (timeScale / baseStep)); //TODO step tient compte du temps de calcul -> pour plus de précision
     // -> Sachant que les mesures effectuées sont enregistrées avec le bon temps dans le fichier.
 
