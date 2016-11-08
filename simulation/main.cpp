@@ -73,6 +73,19 @@ void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 //MAIN
 
+/** Arguments de la ligne de commande :
+ * --method [méthode]
+ * -m [methode] : choisir la méthode de calcul. Méthodes disponibles :
+ * Euler, Runge-Kotta.
+ * --input [dossier]
+ * -i [dossier] : continuer une simulation précédente. Le dossier
+ * indique l'emplacement de la sauvegarde.
+ * --system [système]
+ * -S [système] : choisir le système de départ (système solaire, ...)
+ * --tick [secondes]
+ * -t [secondes] choisir la durée d'un tick, qui détermine la vitesse de la simulation
+ * -s [secondes] choisir le pas physique de la simulation */
+
 int main(int argc, char** argv) {
     //printf("nombre : %.80Lf\n", M_PIl); //;)
 
@@ -142,7 +155,7 @@ void addSolarSystem() {
     earthBody->setPosition(-15, 0, 0);
     earthBody->setSpeed(0, 2.9, 0);
 
-    auto marsBody = std::make_shared<Body>(6000.0);
+    auto marsBody = std::make_shared<Body>(600.0);
     marsBody->setPosition(0, -24.9, 0);
     marsBody->setSpeed(2.19, 0, 0);
 
