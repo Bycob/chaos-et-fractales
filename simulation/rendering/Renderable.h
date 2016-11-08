@@ -37,6 +37,7 @@ public :
     ~RenderableModel();
 
     void setPosition(float x, float y, float z);
+    glm::vec3 getPosition();
 
     void setMaterial(Material &material);
     void addTexturePath(std::string path);

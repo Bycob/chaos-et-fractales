@@ -20,6 +20,10 @@
 
 //DECLARATIONS
 
+//#define SIMULATION_TO_COUT
+
+//TODO rajouter des constantes
+
 struct Planet {
     Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render);
     std::string name;
@@ -33,7 +37,10 @@ std::string DATE;
 int currentPlanet = 0;
 std::unique_ptr<Scene> scene = nullptr;
 std::unique_ptr<World> world = nullptr;
-std::vector<Planet> objects;
+std::vector<Planet> planets;
+
+//TODO struct parameters
+bool enableGraphicalSimulation = true;
 
 void addPlanet(std::string name, double mass, double x, double y, double z, double size);
 
@@ -42,6 +49,9 @@ void addPlanet(Planet planet);
 
 /** Initialise la scène ainsi que le monde physique. */
 void createScene();
+
+/** J'ajoute le système solaire à la scène ! */
+void addSolarSystem();
 
 
 /** Cette méthode est le coeur du thread graphique,
@@ -67,12 +77,13 @@ int main(int argc, char** argv) {
     //printf("nombre : %.80Lf\n", M_PIl); //;)
 
     //TODO déterminer la date
+    //TODO pouvoir reprendre les résultats de la simulation précédente
 
     createScene();
 
     graphicThread();
 
-    for (Planet &object : objects) {
+    for (Planet &object : planets) {
         object.buffer.writeData();
     }
 
@@ -83,7 +94,9 @@ int main(int argc, char** argv) {
 //IMPLEMENTATIONS
 
 Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render)
-    : name(name), body(body), render(render), buffer(name + "_" + DATE) {
+    : name(name), body(body), render(render), buffer(name + "_" + DATE),
+      trajectory(std::make_shared<RenderableTrajectory>()) {
+
 
 }
 
@@ -98,21 +111,24 @@ void createScene() {
     world = std::make_unique<World>();
     world->setGravityConstant(6.7e-11 * 1e3);
 
+    addSolarSystem();
+}
 
+void addSolarSystem() {
     //Rendus
     auto moonRender = std::make_shared<RenderableSphere>(0.8, 64, 64);
     moonRender->addTexturePath("assets/moon.png");
 
-    auto earthRender = std::make_shared<RenderableSphere>(0.2, 64, 64);
+    auto earthRender = std::make_shared<RenderableSphere>(0.8, 64, 64);
     earthRender->addTexturePath("assets/earth.png");
 
-    auto jupiterRender = std::make_shared<RenderableSphere>(0.5, 64, 64);
+    auto jupiterRender = std::make_shared<RenderableSphere>(1.5, 64, 64);
     jupiterRender->addTexturePath("assets/jupiter.png");
 
-    auto marsRender = std::make_shared<RenderableSphere>(0.15, 64, 64);
+    auto marsRender = std::make_shared<RenderableSphere>(0.7, 64, 64);
     marsRender->addTexturePath("assets/mars.png");
 
-    auto sunRender = std::make_shared<RenderableSphere>(2, 64, 64);
+    auto sunRender = std::make_shared<RenderableSphere>(3, 64, 64);
     sunRender->getMaterial().setAmbient(0.85f, 0.25f, 0.1f);
     sunRender->addTexturePath("assets/sun.png");
     sunRender->getMaterial().setEmit(true);
@@ -134,12 +150,12 @@ void createScene() {
     jupiterBody->setPosition(0, 77.8, 0);
     jupiterBody->setSpeed(-1.3, 0, 0);
 
-    auto sunBody = std::make_shared<Body>(2e9);
+    auto sunBody = std::make_shared<Body>(1e9);
 
     //Ajout des objets
-    //addPlanet({"moon", moonBody, moonRender});
     addPlanet({"sun", sunBody, sunRender});
     addPlanet({"earth", earthBody, earthRender});
+    //addPlanet({"moon", moonBody, moonRender});
     addPlanet({"mars", marsBody, marsRender});
     addPlanet({"jupiter", jupiterBody, jupiterRender});
 }
@@ -153,7 +169,7 @@ void addPlanet(std::string name, double mass, double x, double y, double z, doub
 }
 
 void addPlanet(Planet planet) {
-    objects.push_back(planet);
+    planets.push_back(planet);
     if (planet.body != nullptr) world->addObject(planet.body);
     if (planet.render != nullptr) {
         scene->addObject(planet.render);
@@ -193,7 +209,7 @@ void graphicThread() {
     Context context(window);
 
     glEnable(GL_MULTISAMPLE);
-    glClearColor(3 / 255.0f, 0 / 255.0f, 24 / 255.0f, 1);
+    glClearColor(3 / 255.0f, 0 / 255.0f, 32 / 255.0f, 1);
 
     while (!glfwWindowShouldClose(window)) {
 
@@ -206,7 +222,7 @@ void graphicThread() {
         glfwSwapBuffers(window);
         glfwPollEvents();
 
-        usleep(20000);
+        if (enableGraphicalSimulation) usleep(20000);
     }
 
     glfwDestroyWindow(window);
@@ -217,7 +233,6 @@ void graphicThread() {
 void mainLoop(GLFWwindow *window, Context *context) {
 
     /*
-       TODO nouveaux controles de la caméra !
      | -> LEFT et RIGHT pour tourner autour de l'axe UP (quasi toujours vers le haut)
      | -> UP et DOWN pour faire pivoter la position de la cam vers le haut ou le bas (limite aux extremes)
      | -> 0 pour la vue de dessus centrée sur 0, 0
@@ -225,7 +240,6 @@ void mainLoop(GLFWwindow *window, Context *context) {
      | -> vue de côté pour chacun des astres sur les touches 1, 2, 3, 4 ...
      | -> Rotation molette pour le zoom.
       */
-
     //Controles
     int rightKey = glfwGetKey(window, GLFW_KEY_RIGHT);
     int leftKey = glfwGetKey(window, GLFW_KEY_LEFT);
@@ -235,8 +249,9 @@ void mainLoop(GLFWwindow *window, Context *context) {
     if (!scene->camera().isTraveling()) {
         //Mise à jour en fonction de la planete actuelle
         if (currentPlanet != -1) {
-            std::shared_ptr<Body> planetBody = objects[currentPlanet].body;
-            scene->camera().moveCameraByCenterPoint((float) planetBody->getX(), (float) planetBody->getY(), (float) planetBody->getZ());
+            //TODO check not out of bounds
+            glm::vec3 planetGraphicalPos = planets[currentPlanet].render->getPosition();
+            scene->camera().moveCameraByCenterPoint(planetGraphicalPos.x, planetGraphicalPos.y, planetGraphicalPos.z);
         }
 
         glm::vec3 cameraUp = scene->camera().getUp();
@@ -257,33 +272,44 @@ void mainLoop(GLFWwindow *window, Context *context) {
             }
         }
         else if (cameraUp.z == 0){
-
+            //TODO contrôle de la caméra en vue de dessus
         }
 
     }
 
 
 
-    //Mise à jour du monde (précision ~ 1h)
-    world->step(0.02, 50); //TODO step tient compte du temps de calcul -> pour plus de précision
+    //Mise à jour du monde (précision ~ 1h) t*10e6
+    const double timeScale = 2;
+    const double baseStep = 0.004;
+    world->step(timeScale, (int) (timeScale / baseStep)); //TODO step tient compte du temps de calcul -> pour plus de précision
     // -> Sachant que les mesures effectuées sont enregistrées avec le bon temps dans le fichier.
 
-    for (Planet &object : objects) {
-        auto &body = object.body;
+    for (Planet &planet : planets) {
+        auto &body = planet.body;
 
         if (body != nullptr) {
+            //TODO check la présence de la planète 0
+            double x = body->getX() - planets[0].body->getX();
+            double y = body->getY() - planets[0].body->getY();
+            double z = body->getZ() - planets[0].body->getZ();
+
             //Mise à jour des coordonnées de l'objet
-            object.render->setPosition((float) body->getX(), (float) body->getY(), (float) body->getZ());
+            planet.render->setPosition((float) x, (float) y, (float) z);
 
             //Envoi des coordonnées dans le buffer
             std::string separator = ";";
             std::ostringstream stringstream;
-            stringstream << world->getTime() << separator << body->getX() << separator << body->getY() << separator << body->getZ();
-            object.buffer.addLine(stringstream.str());
+            stringstream << world->getTime() << separator << x << separator << y << separator << z;
+            planet.buffer.addLine(stringstream.str());
+
+#ifdef SIMULATION_TO_COUT //TODO to parameter
+            std::cout << planet.name << ":" << stringstream.str() << std::endl;
+#endif
         }
     }
 
-    scene->render(context);
+    if (enableGraphicalSimulation) scene->render(context);
 }
 
 //Declaration des callbacks
@@ -306,10 +332,10 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
         else if (key >= GLFW_KEY_KP_1 && key <= GLFW_KEY_KP_9){
             int targetPlanet = key - GLFW_KEY_KP_1;
 
-            if (targetPlanet < objects.size()) {
+            if (targetPlanet < planets.size()) {
                 currentPlanet = targetPlanet;
 
-                std::shared_ptr<Body> planetBody = objects[currentPlanet].body;
+                std::shared_ptr<Body> planetBody = planets[currentPlanet].body;
 
                 //TODO le 15 en fonction du radius de la planète.
 
