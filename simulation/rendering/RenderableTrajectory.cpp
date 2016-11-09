@@ -25,8 +25,6 @@ void RenderableTrajectory::addPoint(float x, float y, float z) {
 void RenderableTrajectory::render(Context *context, Scene *scene) {
     if (this->points.size() == 0) return;
 
-    std::cout << this->points.size() << std::endl;
-
     if (!this->compiled) buildRenderData(context);
     if (!this->pointsUpdated) updatePoints(context);
 
@@ -34,7 +32,7 @@ void RenderableTrajectory::render(Context *context, Scene *scene) {
     scene->camera().setCameraView(context);
 
     glBindVertexArray(this->gVAO);
-    glDrawArrays(GL_LINES, 0, (GLsizei) this->points.size());
+    glDrawArrays(GL_LINES, 0, this->points.size());
     glBindVertexArray(0);
 }
 
