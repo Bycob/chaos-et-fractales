@@ -25,6 +25,8 @@ void Renderable::regenerateBuffers() {
 
     glGenVertexArrays(1, &this->gVAO);
 
+    glGenBuffers(1, &this->vertexBuffer);
+
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(this->gVAO);
 }
@@ -33,6 +35,11 @@ void Renderable::deleteBuffers() {
     if (this->gVAO != 0) {
         glDeleteVertexArrays(1, &this->gVAO);
         this->gVAO = 0;
+    }
+
+    if (this->vertexBuffer != 0) {
+        glDeleteBuffers(1, &this->vertexBuffer);
+        this->vertexBuffer = 0;
     }
 }
 
@@ -73,18 +80,12 @@ void RenderableModel::addTexturePath(std::string path) {
 void RenderableModel::regenerateBuffers() {
     Renderable::regenerateBuffers();
 
-    glGenBuffers(1, &this->vertexBuffer);
     glGenBuffers(1, &this->normalBuffer);
     glGenBuffers(1, &this->texCoordBuffer);
 }
 
 void RenderableModel::deleteBuffers() {
     Renderable::deleteBuffers();
-
-    if (this->vertexBuffer != 0) {
-        glDeleteBuffers(1, &this->vertexBuffer);
-        this->vertexBuffer = 0;
-    }
 
     if (this->normalBuffer != 0) {
         glDeleteBuffers(1, &this->normalBuffer);

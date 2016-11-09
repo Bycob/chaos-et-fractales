@@ -22,15 +22,15 @@ public :
     bool isInUse() const;
     void stopUsing() const;
 
-    GLint attrib(const GLchar* attribName);
-    GLint uniform(const GLchar* uniformName);
+    GLuint attrib(std::string attribName);
+    GLuint uniform(std::string uniformName);
 
-    void setUniformMatrix4(GLchar * uniformName, glm::mat4 &matrix);
-    void setUniform3f(GLchar *uniformName, const GLfloat &x, const GLfloat &y, const GLfloat &z);
-    void setUniform1i(GLchar * uniformName, const GLint &value);
-    void setUniform1f(GLchar *uniformName, const GLfloat &value);
+    void setUniformMatrix4(std::string uniformName, glm::mat4 &matrix);
+    void setUniform3f(std::string uniformName, const GLfloat &x, const GLfloat &y, const GLfloat &z);
+    void setUniform1i(std::string uniformName, const GLint &value);
+    void setUniform1f(std::string uniformName, const GLfloat &value);
 private :
-    int id;
+    GLuint id;
 };
 
 

@@ -19,7 +19,7 @@ RenderableSphere::RenderableSphere(float radius, int segmentCount, int ringCount
 
 }
 
-void RenderableSphere::render(Context *context) {
+void RenderableSphere::render(Context *context, Scene *scene) {
     if (!compiled) buildModelData(context);
 
     //Translation

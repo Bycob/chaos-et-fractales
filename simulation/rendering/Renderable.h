@@ -14,8 +14,7 @@ class Renderable {
 public :
     virtual ~Renderable();
 
-    virtual void render(Context *context) = 0;
-
+    virtual void render(Context *context, Scene *scene) = 0;
 
 protected :
     Renderable();
@@ -28,6 +27,7 @@ protected :
 
     bool compiled = false;
     GLuint gVAO = 0;
+    GLuint vertexBuffer = 0;
 };
 
 class RenderableModel : public Renderable {
@@ -60,7 +60,6 @@ protected :
     Material material;
     std::vector<std::string> texturePaths;
 
-    GLuint vertexBuffer = 0;
     GLuint normalBuffer = 0;
     GLuint texCoordBuffer = 0;
 

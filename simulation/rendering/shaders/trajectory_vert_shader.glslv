@@ -4,17 +4,16 @@ uniform mat4 projection;
 uniform mat4 camera;
 uniform mat4 model;
 
-in vec3 vert;
-in vec3 vertNorm;
+in vec4 point;
 
+out float id;
 out vec3 fragVert;
-out vec3 fragNorm;
 
 void main() {
     //Passage au fragment shader
-    fragVert = vert;
-    fragNorm = vertNorm;
+    fragVert = vec3(point.x, point.y, point.w);
+    id = point.x;
 
     //Application des modifications de position.
-    gl_Position = projection * camera * model * vec4(vert, 1);
+    gl_Position = projection * camera * model * vec4(point.y, point.z, point.w, 1);
 }

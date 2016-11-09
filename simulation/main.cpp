@@ -47,26 +47,6 @@ void addPlanet(Planet planet);
 
 
 
-std::unique_ptr<Window> window;
-std::string DATE;
-
-struct Parameters {
-    /// Indique la planète qui est au centre du système
-    int originObject = 0;
-    /// true si les données sont envoyées par la sortie standart pour pouvoir
-    /// être exploitées par une autre application.
-    bool pipeMode = false;
-    bool enableRender = true;
-
-    int fps = 50;
-    /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
-    /// lorsqu'il s'écoule 1 seconde.
-    double timeScale = 100;
-    double physicalStep = 0.004;
-} parameters;
-
-
-
 std::unique_ptr<Scene> scene = nullptr;
 std::unique_ptr<World> world = nullptr;
 
@@ -74,6 +54,28 @@ std::unique_ptr<World> world = nullptr;
 void createScene();
 /** J'ajoute le système solaire à la scène ! */
 void addSolarSystem();
+
+
+
+std::unique_ptr<Window> window;
+std::string DATE;
+
+struct Parameters {
+    /// Indique la planète qui est au centre du système. Si == -1,
+    /// alors le centre du système se trouve en 0, 0
+    int originObject = 0;
+    /// true si les données sont envoyées par la sortie standart pour pouvoir
+    /// être exploitées par une autre application.
+    bool pipeMode = false;
+    bool enableRender = true;
+    bool enableTrajectory = true;
+
+    int fps = 50;
+    /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
+    /// lorsqu'il s'écoule 1 seconde.
+    double timeScale = 100;
+    double physicalStep = 0.004;
+} parameters;
 
 
 
@@ -201,7 +203,6 @@ Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<Ren
         : name(name), body(body), render(render), buffer(name + "_" + DATE),
           trajectory(std::make_shared<RenderableTrajectory>()) {
 
-
 }
 
 
@@ -215,9 +216,12 @@ void addPlanet(std::string name, double mass, double x, double y, double z, doub
 
 void addPlanet(Planet planet) {
     planets.push_back(planet);
-    if (planet.body != nullptr) world->addObject(planet.body);
+    if (planet.body != nullptr) {
+        world->addObject(planet.body);
+    }
     if (planet.render != nullptr) {
         scene->addObject(planet.render);
+        scene->addObject(planet.trajectory);
         planet.render->getMaterial().setSpecular(0, 0, 0);
     }
 }
@@ -247,7 +251,7 @@ void start() {
             scene->render(window->context());
 
             window->finalizeFrame();
-            usleep(20000);
+            usleep(20000); //TODO stabiliser le fps
         }
     }
 
@@ -262,8 +266,7 @@ void updateSimulation(GLFWwindow *window, Context *context) {
     //Mise à jour du monde (précision ~ 1h) t*10e6
     const double timeScale = parameters.timeScale / parameters.fps;
     const double baseStep = parameters.physicalStep;
-    world->step(timeScale, (int) (timeScale / baseStep)); //TODO step tient compte du temps de calcul -> pour plus de précision
-    // -> Sachant que les mesures effectuées sont enregistrées avec le bon temps dans le fichier.
+    world->step(timeScale, (int) (timeScale / baseStep));
 
     for (Planet &planet : planets) {
         auto &body = planet.body;
@@ -279,8 +282,11 @@ void updateSimulation(GLFWwindow *window, Context *context) {
                 z -= planets[parameters.originObject].body->getZ();
             }
 
-            //Mise à jour des coordonnées de l'objet
-            planet.render->setPosition((float) x, (float) y, (float) z);
+            //Mise à jour du rendu de l'objet
+            if (parameters.enableRender) {
+                planet.render->setPosition((float) x, (float) y, (float) z);
+                planet.trajectory->addPoint((float) x, (float) y, (float) z);
+            }
 
             //Envoi des coordonnées dans le buffer
             std::string separator = ";";
@@ -368,14 +374,15 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
             if (targetPlanet < planets.size()) {
                 currentPlanet = targetPlanet;
 
-                std::shared_ptr<Body> planetBody = planets[currentPlanet].body;
+                //Utilisation de la position graphique
+                glm::vec3 planetPos = planets[currentPlanet].render->getPosition();
 
                 //TODO le 15 en fonction du radius de la planète.
 
                 auto traveling = std::make_unique<Traveling>(
                         scene->camera(),
-                        planetBody->getX() + 15, planetBody->getY() + 15, planetBody->getZ() + 15,
-                        planetBody->getX(), planetBody->getY(), planetBody->getZ(), 0, 0, 1
+                        planetPos.x + 15, planetPos.y + 15, planetPos.z + 15,
+                        planetPos.x, planetPos.y, planetPos.z, 0, 0, 1
                 );
                 traveling->setDuration(0.5f);
                 scene->camera().traveling(traveling);

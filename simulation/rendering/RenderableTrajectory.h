@@ -15,12 +15,15 @@ public :
 
     void addPoint(float x, float y, float z);
 
-    virtual void render(Context *context);
+    virtual void render(Context *context, Scene *scene);
 private :
     int maxPointCount;
+    bool pointsUpdated;
     std::list<glm::vec3> points;
 
+    /// met à jour le tableau de points
     void buildRenderData(Context *context);
+    void updatePoints(Context *context);
 };
 
 

@@ -28,12 +28,17 @@ public :
      * @param vertexShader le chemin du vertex shader
      * @param fragmentShader le chemin du fragment shader*/
     void loadProgram(std::string name, std::string vertexShader, std::string fragmentShader);
+    /** Change le programme actuel. Le programme est automatiquement
+     * mis en mode utilisation. */
     void setCurrentProgram(std::string currentProgramID);
+    bool setDefaultProgram(std::string programID);
+    std::string getDefaultProgram() {return this->_defaultProgram;}
     Program& program() {return *_programMap.at(this->_currentProgram);}
 private :
     GLFWwindow *_window;
 
     std::string _currentProgram;
+    std::string _defaultProgram = "default";
     std::map<std::string, std::shared_ptr<Program>> _programMap;
 };
 

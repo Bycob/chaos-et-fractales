@@ -78,40 +78,36 @@ void Program::stopUsing() const {
     glUseProgram(0);
 }
 
-GLint Program::attrib(const GLchar *attribName) {
-    if(!attribName)
-        throw std::runtime_error("Please give a non nullptr attribName");
+GLuint Program::attrib(std::string attribName) {
+    const GLchar* name = attribName.c_str();
 
-    GLint attrib = glGetAttribLocation(id, attribName);
-
+    GLuint attrib = glGetAttribLocation(id, name);
     return attrib;
 }
 
-GLint Program::uniform(const GLchar* uniformName) {
-    if(!uniformName)
-        throw std::runtime_error("Please give a non nullptr uniformName");
+GLuint Program::uniform(std::string uniformName) {
+    const GLchar* name = uniformName.c_str();
 
-    GLint uniform = glGetUniformLocation(id, uniformName);
-
+    GLuint uniform = glGetUniformLocation(id, name);
     return uniform;
 }
 
-void Program::setUniformMatrix4(GLchar * uniformName, glm::mat4 &matrix) {
+void Program::setUniformMatrix4(std::string uniformName, glm::mat4 &matrix) {
     if (!isInUse()) throw std::runtime_error("This program is not in use.");
     glUniformMatrix4fv(uniform(uniformName), 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
-void Program::setUniform3f(GLchar *uniformName, const GLfloat &x, const GLfloat &y, const GLfloat &z) {
+void Program::setUniform3f(std::string uniformName, const GLfloat &x, const GLfloat &y, const GLfloat &z) {
     if (!isInUse()) throw std::runtime_error("This program is not in use.");
     glUniform3f(uniform(uniformName), x, y, z);
 }
 
-void Program::setUniform1i(GLchar *uniformName, const GLint &value) {
+void Program::setUniform1i(std::string uniformName, const GLint &value) {
     if (!isInUse()) throw std::runtime_error("This program is not in use.");
     glUniform1i(uniform(uniformName), value);
 }
 
-void Program::setUniform1f(GLchar *uniformName, const GLfloat &value) {
+void Program::setUniform1f(std::string uniformName, const GLfloat &value) {
     if (!isInUse()) throw std::runtime_error("This program is not in use.");
     glUniform1f(uniform(uniformName), value);
 }

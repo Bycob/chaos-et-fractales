@@ -30,7 +30,10 @@ void Scene::render(Context *context) {
     this->_camera.setCameraView(context);
 
     for (auto object : objects) {
-        object->render(context);
+        //TODO voir à quel point on rétablit une configuration par défaut entre chaque rendu.
+        context->setCurrentProgram("");
+        this->_camera.setCameraView(context);
+        object->render(context, this);
     }
     context->pushLight(_light);
 

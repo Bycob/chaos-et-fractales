@@ -37,9 +37,21 @@ void Context::pushMaterial(Material &material) {
 }
 
 void Context::setCurrentProgram(std::string currentProgramID) {
-    this->_currentProgram = currentProgramID;
+    if (_programMap.find(currentProgramID) == _programMap.end()) {
+        currentProgramID = _defaultProgram;
+    }
 
+    this->_currentProgram = currentProgramID;
     this->program().use();
+}
+
+bool Context::setDefaultProgram(std::string programID) {
+    if (_programMap.find(programID) == _programMap.end()) {
+        return false;
+    }
+
+    this->_defaultProgram = programID;
+    return true;
 }
 
 void Context::loadProgram(std::string name, std::string vertexShader, std::string fragmentShader) {

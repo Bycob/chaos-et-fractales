@@ -11,7 +11,7 @@ class RenderableSphere : public RenderableModel {
 public :
     RenderableSphere(float radius = 1, int segmentCount = 24, int ringCount = 24);
 
-    virtual void render(Context *context) override;
+    virtual void render(Context *context, Scene *scene) override;
 
 private :
     /// Calcule les points du modèle de la sphère et crée un
