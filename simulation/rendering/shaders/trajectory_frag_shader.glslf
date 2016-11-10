@@ -10,5 +10,5 @@ in float id;
 out vec4 finalColor;
 
 void main() {
-    finalColor = vec4(1, 1, 1, 1);
+    finalColor = 0.5 * vec4(1 - id / 10000, 1 - id / 10000, id / 10000, 2);
 }

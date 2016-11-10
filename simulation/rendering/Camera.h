@@ -84,7 +84,7 @@ private:
 
     float fov = 60;
     float ratio = 1;
-    float zNear = 0.1, zFar = 1000;
+    float zNear = 0.1, zFar = 5000;
 
     std::unique_ptr<Traveling> _traveling = nullptr;
 };

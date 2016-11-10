@@ -8,6 +8,7 @@
 #include <GLFW/glfw3.h>
 #include <zconf.h>
 #include <memory>
+#include <csignal>
 
 #include "FileBuffer.h"
 #include "rendering/Window.h"
@@ -67,15 +68,23 @@ struct Parameters {
     /// true si les données sont envoyées par la sortie standart pour pouvoir
     /// être exploitées par une autre application.
     bool pipeMode = false;
-    bool enableRender = true;
+    /** Si vaut true, alors les résultats de la simulation sont affichés
+     * en 3D dans la fenêtre.
+     * Si vaut false, les résultats de la simulation sont affichés via
+     * la console (dans tous les cas, les résultats sont enregistrés dans
+     * un fichier à la fin.*/
+    bool enableRender = false;
+
     bool enableTrajectory = true;
 
     int fps = 50;
     /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
     /// lorsqu'il s'écoule 1 seconde.
-    double timeScale = 100;
+    double timeScale = 1;
     double physicalStep = 0.004;
 } parameters;
+
+void updateTrajectoryVisibility();
 
 
 
@@ -89,7 +98,11 @@ void start();
 /** Cette méthode est appelée à chaque tour de boucle pour
  * analyser les entrées sorties, mettre à jour le monde physique
  * et dessiner la scene à l'écran. */
-void updateSimulation(GLFWwindow *window, Context *context);
+void stepSimulation();
+
+/** Ecrit les résultats de la simulation dans les fichiers prévus
+ * à cet effet. */
+void writeFiles();
 
 
 
@@ -124,11 +137,23 @@ int main(int argc, char** argv) {
     createScene();
     start();
 
+    writeFiles();
+
+    return 0;
+}
+
+void writeFiles() {
     for (Planet &object : planets) {
         object.buffer.writeData();
     }
+}
 
-    return 0;
+void updateTrajectoryVisibility() {
+    for (Planet &planet : planets) {
+        if (planet.trajectory != nullptr) {
+            planet.trajectory->setActive(parameters.enableTrajectory);
+        }
+    }
 }
 
 
@@ -148,6 +173,8 @@ void createScene() {
     world->setGravityConstant(GRAVITY_CONSTANT * 1e3);
 
     addSolarSystem();
+
+    updateTrajectoryVisibility();
 }
 
 void addSolarSystem() {
@@ -235,15 +262,31 @@ void addPlanet(Planet planet) {
 
 
 void start() {
-    window = std::make_unique<Window>();
+    bool running = true;
 
-    window->setKeyCallback(glfwKeyCallback);
-    window->setScrollCallback(glfwScrollCallback);
+    if (parameters.enableRender) {
+        window = std::make_unique<Window>();
 
-    glClearColor(CLEAR_COLOR_R / 255.0f, CLEAR_COLOR_G / 255.0f, CLEAR_COLOR_B / 255.0f, 1);
+        window->setKeyCallback(glfwKeyCallback);
+        window->setScrollCallback(glfwScrollCallback);
 
-    while (!window->shouldClose()) {
-        updateSimulation(window->window(), window->context());
+        glClearColor(CLEAR_COLOR_R / 255.0f, CLEAR_COLOR_G / 255.0f, CLEAR_COLOR_B / 255.0f, 1);
+    }
+    else {
+        auto sigstop = [](int signum) {
+            std::cout << "Simulation interrompue. Ecriture des données..." << std::endl;
+            writeFiles();
+            std::cout << "Données écrites" << std::endl;
+
+            std::exit(0);
+        };
+
+        std::signal(SIGINT, sigstop);
+        std::signal(SIGTERM, sigstop);
+    }
+
+    while (running) {
+        stepSimulation();
 
         if (parameters.enableRender) {
             window->setupFrame();
@@ -252,16 +295,25 @@ void start() {
 
             window->finalizeFrame();
             usleep(20000); //TODO stabiliser le fps
+
+            if (window->shouldClose()) {
+                running = false;
+            }
+        }
+        else {
+            
         }
     }
 
-    window->destroy();
+    if (parameters.enableRender) {
+        window->destroy();
+    }
 }
 
 
 
 
-void updateSimulation(GLFWwindow *window, Context *context) {
+void stepSimulation() {
 
     //Mise à jour du monde (précision ~ 1h) t*10e6
     const double timeScale = parameters.timeScale / parameters.fps;
@@ -387,6 +439,10 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
                 traveling->setDuration(0.5f);
                 scene->camera().traveling(traveling);
             }
+        }
+        else if (key == GLFW_KEY_T) {
+            parameters.enableTrajectory = ! parameters.enableTrajectory;
+            updateTrajectoryVisibility();
         }
     }
 }

@@ -16,6 +16,8 @@ public :
 
     virtual void render(Context *context, Scene *scene) = 0;
 
+    void setActive(bool active) {this->active = active;}
+
 protected :
     Renderable();
 
@@ -24,6 +26,8 @@ protected :
     /// puis bind le vertex Array pour préparer un envoi
     /// de données.
     virtual void regenerateBuffers();
+
+    bool active = true;
 
     bool compiled = false;
     GLuint gVAO = 0;

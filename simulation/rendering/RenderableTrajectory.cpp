@@ -2,6 +2,7 @@
 // Created by louis on 06/11/16.
 //
 
+#include <glm/glm.hpp>
 #include <iostream>
 
 #include "RenderableTrajectory.h"
@@ -23,17 +24,23 @@ void RenderableTrajectory::addPoint(float x, float y, float z) {
 }
 
 void RenderableTrajectory::render(Context *context, Scene *scene) {
-    if (this->points.size() == 0) return;
+    if (this->points.size() == 0 || !this->active) return;
 
     if (!this->compiled) buildRenderData(context);
     if (!this->pointsUpdated) updatePoints(context);
 
     context->setCurrentProgram("trajectory");
     scene->camera().setCameraView(context);
+    glm::mat4x4 model;
+    context->program().setUniformMatrix4("model", model);
+
+    glDepthMask(GL_FALSE);
 
     glBindVertexArray(this->gVAO);
-    glDrawArrays(GL_LINES, 0, this->points.size());
+    glDrawArrays(GL_LINE_STRIP, 0, this->points.size());
     glBindVertexArray(0);
+
+    glDepthMask(GL_TRUE);
 }
 
 void RenderableTrajectory::buildRenderData(Context *context) {
@@ -56,10 +63,10 @@ void RenderableTrajectory::updatePoints(Context *context) {
 
     auto iter = points.begin();
     for (int i = 0 ; i < points.size() ; i++) {
-        vertices[i] = i;
-        vertices[i + 1] = (*iter).x;
-        vertices[i + 2] = (*iter).y;
-        vertices[i + 3] = (*iter).z;
+        vertices[i * floatPerVert] = i;
+        vertices[i * floatPerVert + 1] = (*iter).x;
+        vertices[i * floatPerVert + 2] = (*iter).y;
+        vertices[i * floatPerVert + 3] = (*iter).z;
         iter++;
     }
 
