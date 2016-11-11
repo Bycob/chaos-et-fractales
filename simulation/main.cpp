@@ -27,7 +27,6 @@
 
 
 
-
 //DECLARATIONS
 
 struct Planet {
@@ -39,32 +38,37 @@ struct Planet {
     FileBuffer buffer;
 };
 
-int currentPlanet = 0;
-std::vector<Planet> planets;
+namespace runtime {
+    std::string DATE;
 
-void addPlanet(std::string name, double mass, double x, double y, double z, double size);
-/** Ajoute une planète à la scene et au monde physique. */
-void addPlanet(Planet planet);
+    /// La fenêtre principale de la simulation
+    std::unique_ptr<Window> window;
+    /// La scène qui contient les objets à afficher (planètes, trajectoires...)
+    std::unique_ptr<Scene> scene = nullptr;
+    /// Le monde qui contient les parties physiques des objets
+    std::unique_ptr<World> world = nullptr;
+    /// L'ensemble des planètes de la simulation.
+    std::vector<Planet> planets;
 
+    /// Indique, dans la simulation, quelle est la planète sur laquelle est
+    /// centrée la vue actuellement. Si vaut -1, alors la vue est centrée sur
+    /// 0, 0
+    int currentPlanet = 0;
 
-
-std::unique_ptr<Scene> scene = nullptr;
-std::unique_ptr<World> world = nullptr;
-
-/** Initialise la scène ainsi que le monde physique. */
-void createScene();
-/** J'ajoute le système solaire à la scène ! */
-void addSolarSystem();
-
-
-
-std::unique_ptr<Window> window;
-std::string DATE;
-
-struct Parameters {
+    /** Si true, alors les trajectoires  */
+    bool enableTrajectory = true;
     /// Indique la planète qui est au centre du système. Si == -1,
     /// alors le centre du système se trouve en 0, 0
     int originObject = 0;
+
+    /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
+    /// lorsqu'il s'écoule 1 seconde.
+    double timeScale = 1;
+    /// Le pas de discrétisation physique de la simulation.
+    double physicalStep = 0.004;
+}
+
+namespace parameters {
     /// true si les données sont envoyées par la sortie standart pour pouvoir
     /// être exploitées par une autre application.
     bool pipeMode = false;
@@ -73,16 +77,27 @@ struct Parameters {
      * Si vaut false, les résultats de la simulation sont affichés via
      * la console (dans tous les cas, les résultats sont enregistrés dans
      * un fichier à la fin.*/
-    bool enableRender = false;
-
-    bool enableTrajectory = true;
+    bool enableRender = true;
 
     int fps = 50;
-    /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
-    /// lorsqu'il s'écoule 1 seconde.
-    double timeScale = 1;
-    double physicalStep = 0.004;
-} parameters;
+}
+
+
+void addPlanet(std::string name, double mass, double x, double y, double z, double size);
+/** Ajoute une planète à la scene et au monde physique. */
+void addPlanet(Planet planet);
+
+
+
+
+/** Initialise la scène ainsi que le monde physique. */
+void createScene();
+/** J'ajoute le système solaire à la scène ! */
+void addSolarSystem();
+
+
+
+
 
 void updateTrajectoryVisibility();
 
@@ -113,7 +128,7 @@ void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 //MAIN
 
-/** Arguments de la ligne de commande :
+/* Arguments de la ligne de commande :
  * --method [méthode]
  * -m [methode] : choisir la méthode de calcul. Méthodes disponibles :
  * Euler, Runge-Kotta.
@@ -143,15 +158,15 @@ int main(int argc, char** argv) {
 }
 
 void writeFiles() {
-    for (Planet &object : planets) {
+    for (Planet &object : runtime::planets) {
         object.buffer.writeData();
     }
 }
 
 void updateTrajectoryVisibility() {
-    for (Planet &planet : planets) {
+    for (Planet &planet : runtime::planets) {
         if (planet.trajectory != nullptr) {
-            planet.trajectory->setActive(parameters.enableTrajectory);
+            planet.trajectory->setActive(runtime::enableTrajectory);
         }
     }
 }
@@ -163,14 +178,14 @@ void updateTrajectoryVisibility() {
 
 
 void createScene() {
-    scene = std::make_unique<Scene>();
+    runtime::scene = std::make_unique<Scene>();
 
     Light light(LIGHT_POINT, 0, 0, 0);
-    scene->setLight(light);
+    runtime::scene->setLight(light);
 
     //dist 1e10 m, mass 1e21 kg, tps 1e6 s, vit 1e4 m.s-1 -> G *= 1e3 (- 10*3 + 21 + 6*2)
-    world = std::make_unique<World>();
-    world->setGravityConstant(GRAVITY_CONSTANT * 1e3);
+    runtime::world = std::make_unique<World>();
+    runtime::world->setGravityConstant(GRAVITY_CONSTANT * 1e3);
 
     addSolarSystem();
 
@@ -227,7 +242,7 @@ void addSolarSystem() {
 // -----
 
 Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render)
-        : name(name), body(body), render(render), buffer(name + "_" + DATE),
+        : name(name), body(body), render(render), buffer(name + "_" + runtime::DATE),
           trajectory(std::make_shared<RenderableTrajectory>()) {
 
 }
@@ -242,13 +257,13 @@ void addPlanet(std::string name, double mass, double x, double y, double z, doub
 }
 
 void addPlanet(Planet planet) {
-    planets.push_back(planet);
+    runtime::planets.push_back(planet);
     if (planet.body != nullptr) {
-        world->addObject(planet.body);
+        runtime::world->addObject(planet.body);
     }
     if (planet.render != nullptr) {
-        scene->addObject(planet.render);
-        scene->addObject(planet.trajectory);
+        runtime::scene->addObject(planet.render);
+        runtime::scene->addObject(planet.trajectory);
         planet.render->getMaterial().setSpecular(0, 0, 0);
     }
 }
@@ -264,11 +279,11 @@ void addPlanet(Planet planet) {
 void start() {
     bool running = true;
 
-    if (parameters.enableRender) {
-        window = std::make_unique<Window>();
+    if (parameters::enableRender) {
+        runtime::window = std::make_unique<Window>();
 
-        window->setKeyCallback(glfwKeyCallback);
-        window->setScrollCallback(glfwScrollCallback);
+        runtime::window->setKeyCallback(glfwKeyCallback);
+        runtime::window->setScrollCallback(glfwScrollCallback);
 
         glClearColor(CLEAR_COLOR_R / 255.0f, CLEAR_COLOR_G / 255.0f, CLEAR_COLOR_B / 255.0f, 1);
     }
@@ -283,30 +298,32 @@ void start() {
 
         std::signal(SIGINT, sigstop);
         std::signal(SIGTERM, sigstop);
+
+        std::cout << "Démarrage de la simulation. Ctrl-C pour interrompre la simulation." << std::endl;
     }
 
     while (running) {
         stepSimulation();
 
-        if (parameters.enableRender) {
-            window->setupFrame();
-            input(window->window());
-            scene->render(window->context());
+        if (parameters::enableRender) {
+            runtime::window->setupFrame();
+            input(runtime::window->window());
+            runtime::scene->render(runtime::window->context());
 
-            window->finalizeFrame();
+            runtime::window->finalizeFrame();
             usleep(20000); //TODO stabiliser le fps
 
-            if (window->shouldClose()) {
+            if (runtime::window->shouldClose()) {
                 running = false;
             }
         }
         else {
-            
+
         }
     }
 
-    if (parameters.enableRender) {
-        window->destroy();
+    if (parameters::enableRender) {
+        runtime::window->destroy();
     }
 }
 
@@ -316,11 +333,11 @@ void start() {
 void stepSimulation() {
 
     //Mise à jour du monde (précision ~ 1h) t*10e6
-    const double timeScale = parameters.timeScale / parameters.fps;
-    const double baseStep = parameters.physicalStep;
-    world->step(timeScale, (int) (timeScale / baseStep));
+    const double timeScale = runtime::timeScale / parameters::fps;
+    const double baseStep = runtime::physicalStep;
+    runtime::world->step(timeScale, (int) (timeScale / baseStep));
 
-    for (Planet &planet : planets) {
+    for (Planet &planet : runtime::planets) {
         auto &body = planet.body;
 
         if (body != nullptr) {
@@ -328,14 +345,14 @@ void stepSimulation() {
             double y = body->getY();
             double z = body->getZ();
 
-            if (parameters.originObject != -1 && planets.size() > parameters.originObject) {
-                x -= planets[parameters.originObject].body->getX();
-                y -= planets[parameters.originObject].body->getY();
-                z -= planets[parameters.originObject].body->getZ();
+            if (runtime::originObject != -1 && runtime::planets.size() > runtime::originObject) {
+                x -= runtime::planets[runtime::originObject].body->getX();
+                y -= runtime::planets[runtime::originObject].body->getY();
+                z -= runtime::planets[runtime::originObject].body->getZ();
             }
 
             //Mise à jour du rendu de l'objet
-            if (parameters.enableRender) {
+            if (parameters::enableRender) {
                 planet.render->setPosition((float) x, (float) y, (float) z);
                 planet.trajectory->addPoint((float) x, (float) y, (float) z);
             }
@@ -343,10 +360,10 @@ void stepSimulation() {
             //Envoi des coordonnées dans le buffer
             std::string separator = ";";
             std::ostringstream stringstream;
-            stringstream << world->getTime() << separator << x << separator << y << separator << z;
+            stringstream << runtime::world->getTime() << separator << x << separator << y << separator << z;
             planet.buffer.addLine(stringstream.str());
 
-            if (parameters.pipeMode) {
+            if (parameters::pipeMode) {
                 //Envoie des coordonnées sur la sortie stdout
                 std::cout << planet.name << ":" << stringstream.str() << std::endl;
             }
@@ -378,28 +395,28 @@ void input(GLFWwindow * window) {
     int upKey = glfwGetKey(window, GLFW_KEY_UP);
     int downKey = glfwGetKey(window, GLFW_KEY_DOWN);
 
-    if (!scene->camera().isTraveling()) {
+    if (!runtime::scene->camera().isTraveling()) {
         //Mise à jour en fonction de la planete actuelle
-        if (currentPlanet != -1 && currentPlanet < planets.size()) {
-            glm::vec3 planetGraphicalPos = planets[currentPlanet].render->getPosition();
-            scene->camera().moveCameraByCenterPoint(planetGraphicalPos.x, planetGraphicalPos.y, planetGraphicalPos.z);
+        if (runtime::currentPlanet != -1 && runtime::currentPlanet < runtime::planets.size()) {
+            glm::vec3 planetGraphicalPos = runtime::planets[runtime::currentPlanet].render->getPosition();
+            runtime::scene->camera().moveCameraByCenterPoint(planetGraphicalPos.x, planetGraphicalPos.y, planetGraphicalPos.z);
         }
 
-        glm::vec3 cameraUp = scene->camera().getUp();
+        glm::vec3 cameraUp = runtime::scene->camera().getUp();
 
         if (cameraUp.x == 0 && cameraUp.y == 0) {
             if (rightKey == GLFW_PRESS && leftKey != GLFW_PRESS) {
-                scene->camera().rotateZ(180.0f / 70.0f);
+                runtime::scene->camera().rotateZ(180.0f / 70.0f);
             }
             else if (leftKey == GLFW_PRESS && rightKey != GLFW_PRESS) {
-                scene->camera().rotateZ(- 180.0f / 70.0f);
+                runtime::scene->camera().rotateZ(- 180.0f / 70.0f);
             }
 
             if (upKey == GLFW_PRESS && downKey != GLFW_PRESS) {
-                scene->camera().rotateUpDown(180.0f / 70.0f);
+                runtime::scene->camera().rotateUpDown(180.0f / 70.0f);
             }
             else if (downKey == GLFW_PRESS && upKey != GLFW_PRESS) {
-                scene->camera().rotateUpDown(- 180.0f / 70.0f);
+                runtime::scene->camera().rotateUpDown(- 180.0f / 70.0f);
             }
         }
         else if (cameraUp.z == 0){
@@ -412,41 +429,41 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
 
     if (action == GLFW_PRESS) {
         if (key == GLFW_KEY_KP_0) {
-            currentPlanet = -1;
+            runtime::currentPlanet = -1;
 
             auto traveling = std::make_unique<Traveling>(
-                    scene->camera(), 0, 0, 30, 0, 0, 0, 0, 1, 0
+                    runtime::scene->camera(), 0, 0, 30, 0, 0, 0, 0, 1, 0
             );
             traveling->setDuration(0.5f);
-            scene->camera().traveling(traveling);
+            runtime::scene->camera().traveling(traveling);
         }
         else if (key >= GLFW_KEY_KP_1 && key <= GLFW_KEY_KP_9){
             int targetPlanet = key - GLFW_KEY_KP_1;
 
-            if (targetPlanet < planets.size()) {
-                currentPlanet = targetPlanet;
+            if (targetPlanet < runtime::planets.size()) {
+                runtime::currentPlanet = targetPlanet;
 
                 //Utilisation de la position graphique
-                glm::vec3 planetPos = planets[currentPlanet].render->getPosition();
+                glm::vec3 planetPos = runtime::planets[runtime::currentPlanet].render->getPosition();
 
                 //TODO le 15 en fonction du radius de la planète.
 
                 auto traveling = std::make_unique<Traveling>(
-                        scene->camera(),
+                        runtime::scene->camera(),
                         planetPos.x + 15, planetPos.y + 15, planetPos.z + 15,
                         planetPos.x, planetPos.y, planetPos.z, 0, 0, 1
                 );
                 traveling->setDuration(0.5f);
-                scene->camera().traveling(traveling);
+                runtime::scene->camera().traveling(traveling);
             }
         }
         else if (key == GLFW_KEY_T) {
-            parameters.enableTrajectory = ! parameters.enableTrajectory;
+            runtime::enableTrajectory = ! runtime::enableTrajectory;
             updateTrajectoryVisibility();
         }
     }
 }
 
 void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset) {
-    scene->camera().zoom((float) pow(1.2, - yoffset));
+    runtime::scene->camera().zoom((float) pow(1.2, - yoffset));
 }
