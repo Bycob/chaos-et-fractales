@@ -10,7 +10,11 @@
 #include "Scene.h"
 
 RenderableTrajectory::RenderableTrajectory(int maxPointCount) : maxPointCount(maxPointCount) {
+    _usesBlendMode = true;
+}
 
+void RenderableTrajectory::setColor(float r, float g, float b) {
+    this->color = glm::vec3(r, g, b);
 }
 
 void RenderableTrajectory::addPoint(float x, float y, float z) {
@@ -29,10 +33,14 @@ void RenderableTrajectory::render(Context *context, Scene *scene) {
     if (!this->compiled) buildRenderData(context);
     if (!this->pointsUpdated) updatePoints(context);
 
+    //TODO Faire en sorte qu'il y ai moins de trucs à reparamétrer ici
     context->setCurrentProgram("trajectory");
     scene->camera().setCameraView(context);
+
     glm::mat4x4 model;
     context->program().setUniformMatrix4("model", model);
+
+    context->program().setUniform3f("color", color.r, color.g, color.b);
 
     glDepthMask(GL_FALSE);
 

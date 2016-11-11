@@ -18,6 +18,8 @@ public :
 
     void setActive(bool active) {this->active = active;}
 
+    bool usesBlendMode() {return _usesBlendMode;}
+
 protected :
     Renderable();
 
@@ -32,6 +34,9 @@ protected :
     bool compiled = false;
     GLuint gVAO = 0;
     GLuint vertexBuffer = 0;
+
+    //---
+    bool _usesBlendMode = false;
 };
 
 class RenderableModel : public Renderable {

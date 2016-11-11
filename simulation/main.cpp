@@ -2,6 +2,7 @@
 // Created by louis on 06/10/16.
 //
 
+#include <math.h>
 #include <iostream>
 #include <sstream>
 #include <glad/glad.h>
@@ -9,6 +10,7 @@
 #include <zconf.h>
 #include <memory>
 #include <csignal>
+#include <cstring>
 
 #include "FileBuffer.h"
 #include "rendering/Window.h"
@@ -63,7 +65,7 @@ namespace runtime {
 
     /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
     /// lorsqu'il s'écoule 1 seconde.
-    double timeScale = 1;
+    double timeScale = 10;
     /// Le pas de discrétisation physique de la simulation.
     double physicalStep = 0.004;
 }
@@ -143,11 +145,20 @@ void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
 int main(int argc, char** argv) {
     //printf("nombre : %.80Lf\n", M_PIl); //;)
+    srand(time(NULL));
 
     //TODO déterminer la date
     //TODO pouvoir reprendre les résultats de la simulation précédente
 
-    //TODO Analyse des arguments
+    //TODO Analyse des arguments => faire quelque chose de propre
+    for (int i = 0 ; i < argc ; i++) {
+        if (strcmp(argv[i], "pipe") == 0) {
+            parameters::pipeMode = true;
+        }
+        else if (strcmp(argv[i], "norender") == 0) {
+            parameters::enableRender = false;
+        }
+    }
 
     createScene();
     start();
@@ -265,6 +276,21 @@ void addPlanet(Planet planet) {
         runtime::scene->addObject(planet.render);
         runtime::scene->addObject(planet.trajectory);
         planet.render->getMaterial().setSpecular(0, 0, 0);
+
+        //TODO fonction pour la couleur aléatoire à une place appropriée
+        float r = (float) rand() / RAND_MAX;
+        float g = (float) rand() / RAND_MAX;
+        float b = (float) rand() / RAND_MAX;
+        float max = r >= g && r >= b ? r : (g >= r && g >= b ? g : b);
+        float min = r <= g && r <= b ? r : (g <= r && g <= b ? g : b);
+        if (max == min) {
+            max = 1;
+            min = 0;
+        }
+        r = (r - min) / (max - min);
+        g = (g - min) / (max - min);
+        b = (b - min) / (max - min);
+        planet.trajectory->setColor(r, g, b);
     }
 }
 
@@ -319,6 +345,11 @@ void start() {
         }
         else {
 
+
+            // Pour laisser le temps à python de respirer
+            if (parameters::pipeMode) {
+                usleep(30000);
+            }
         }
     }
 

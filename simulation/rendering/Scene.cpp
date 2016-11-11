@@ -45,5 +45,9 @@ void Scene::setLight(Light &light) {
 }
 
 void Scene::addObject(std::shared_ptr<Renderable> renderable) {
+    if (renderable->usesBlendMode()) {
+
+    }
+
     objects.push_back(std::shared_ptr<Renderable>(renderable));
 }
