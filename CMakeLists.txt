@@ -23,7 +23,11 @@ find_package(glfw3 3.2 REQUIRED)
 # Target principale
 
 add_executable(simulation ${SIMULATION_SOURCES} ${GLAD_SOURCES})
-target_link_libraries(simulation glfw X11 pthread)
+if (WIN32)
+	target_link_libraries(simulation glfw3dll X11 pthread)
+else()
+	target_link_libraries(simulation glfw X11 pthread)
+endif()
 
 add_custom_command(TARGET simulation PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
