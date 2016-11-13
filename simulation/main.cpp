@@ -7,11 +7,11 @@
 #include <sstream>
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <zconf.h>
 #include <memory>
 #include <csignal>
 #include <cstring>
 
+#include "utils.h"
 #include "FileBuffer.h"
 #include "rendering/Window.h"
 #include "rendering/Context.h"
@@ -318,20 +318,8 @@ void addPlanet(Planet planet) {
         runtime::scene->addObject(planet.trajectory);
         planet.render->getMaterial().setSpecular(0, 0, 0);
 
-        //TODO fonction pour la couleur aléatoire à une place appropriée
-        float r = (float) rand() / RAND_MAX;
-        float g = (float) rand() / RAND_MAX;
-        float b = (float) rand() / RAND_MAX;
-        float max = r >= g && r >= b ? r : (g >= r && g >= b ? g : b);
-        float min = r <= g && r <= b ? r : (g <= r && g <= b ? g : b);
-        if (max == min) {
-            max = 1;
-            min = 0;
-        }
-        r = (r - min) / (max - min);
-        g = (g - min) / (max - min);
-        b = (b - min) / (max - min);
-        planet.trajectory->setColor(r, g, b);
+        glm::vec3 color = randBrightColor();
+        planet.trajectory->setColor(color.r, color.g, color.b);
     }
 }
 
@@ -378,7 +366,7 @@ void start() {
             runtime::scene->render(runtime::window->context());
 
             runtime::window->finalizeFrame();
-            usleep(20000); //TODO stabiliser le fps
+            sleep(20); //TODO stabiliser le fps
 
             if (runtime::window->shouldClose()) {
                 running = false;
@@ -388,7 +376,7 @@ void start() {
 
             // Pour laisser le temps à python de respirer
             if (parameters::pipeMode) {
-                usleep(30000);
+                sleep(30);
             }
         }
     }
