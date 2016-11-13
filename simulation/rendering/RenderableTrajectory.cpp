@@ -33,12 +33,7 @@ void RenderableTrajectory::render(Context *context, Scene *scene) {
     if (!this->compiled) buildRenderData(context);
     if (!this->pointsUpdated) updatePoints(context);
 
-    //TODO Faire en sorte qu'il y ai moins de trucs à reparamétrer ici
     context->setCurrentProgram("trajectory");
-    scene->camera().setCameraView(context);
-
-    glm::mat4x4 model;
-    context->program().setUniformMatrix4("model", model);
 
     context->program().setUniform3f("color", color.r, color.g, color.b);
 

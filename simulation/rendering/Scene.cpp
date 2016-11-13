@@ -27,15 +27,14 @@ void Scene::render(Context *context) {
 
     this->_camera.setRatio((float) width / height);
     this->_camera.updateCamera();
-    this->_camera.setCameraView(context);
+
+    context->setCamera(_camera);
+    context->setLight(_light);
 
     for (auto object : objects) {
-        //TODO voir à quel point on rétablit une configuration par défaut entre chaque rendu.
         context->setCurrentProgram("");
-        this->_camera.setCameraView(context);
         object->render(context, this);
     }
-    context->pushLight(_light);
 
     context->program().stopUsing();
 }
@@ -45,9 +44,14 @@ void Scene::setLight(Light &light) {
 }
 
 void Scene::addObject(std::shared_ptr<Renderable> renderable) {
-    if (renderable->usesBlendMode()) {
+    auto index = objects.begin();
+    for ( ; index != objects.end() ; ++index) {
+        std::shared_ptr<Renderable> inplace = *index;
 
+        if (inplace->usesBlendMode() && !renderable->usesBlendMode()) {
+            break;
+        }
     }
 
-    objects.push_back(std::shared_ptr<Renderable>(renderable));
+    objects.insert(index, std::shared_ptr<Renderable>(renderable));
 }

@@ -8,11 +8,13 @@
 #include <GLFW/glfw3.h>
 #include <memory>
 #include <map>
+
 #include "Program.h"
+#include "Camera.h"
+#include "Light.h"
+#include "Material.h"
 
 class Program;
-class Light;
-class Material;
 
 class Context {
 
@@ -21,8 +23,11 @@ public :
     void setWindow(GLFWwindow * window);
     void getWindowDimensions(int &width, int &height);
 
-    void pushLight(Light &light);
-    void pushMaterial(Material &material);
+    void setup();
+
+    void setLight(Light &light);
+    void setMaterial(Material &material);
+    void setCamera(Camera &camera);
 
     /** Charge le programme composé des shaders passés en paramètres.
      * @param vertexShader le chemin du vertex shader
@@ -40,6 +45,10 @@ private :
     std::string _currentProgram;
     std::string _defaultProgram = "default";
     std::map<std::string, std::shared_ptr<Program>> _programMap;
+
+    Material _material;
+    Camera * _camera;
+    Light _light;
 };
 
 

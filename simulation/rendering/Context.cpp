@@ -29,12 +29,35 @@ void Context::getWindowDimensions(int &width, int &height) {
     glfwGetFramebufferSize(this->_window, &width, &height);
 }
 
-void Context::pushLight(Light &light) {
+void Context::setup() {
+    this->_light.pushLight(this);
+    this->_material.pushMaterial(this);
+
+    if (this->_camera != nullptr) {
+        this->_camera->setCameraView(this);
+    }
+
+    glm::mat4x4 model;
+    program().setUniformMatrix4("model", model);
+
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void Context::setLight(Light &light) {
+    this->_light = light;
     light.pushLight(this);
 }
 
-void Context::pushMaterial(Material &material) {
+void Context::setMaterial(Material &material) {
+    this->_material = material;
     material.pushMaterial(this);
+}
+
+void Context::setCamera(Camera &camera) {
+    //TODO résoudre le risque de segfault
+    this->_camera = &camera;
+    camera.setCameraView(this);
 }
 
 void Context::setCurrentProgram(std::string currentProgramID) {
@@ -44,6 +67,7 @@ void Context::setCurrentProgram(std::string currentProgramID) {
 
     this->_currentProgram = currentProgramID;
     this->program().use();
+    this->setup();
 }
 
 bool Context::setDefaultProgram(std::string programID) {

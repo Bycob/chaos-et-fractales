@@ -28,7 +28,7 @@ void RenderableSphere::render(Context *context, Scene *scene) {
     glm::mat4x4 model = glm::translate(glm::mat4x4(), glm::tvec3<float>(this->x, this->y, this->z));
     context->program().setUniformMatrix4("model", model);
 
-    context->pushMaterial(this->material);
+    context->setMaterial(this->material);
 
     glBindVertexArray(this->gVAO);
 

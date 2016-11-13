@@ -77,6 +77,7 @@ void Traveling::update(Camera &camera) {
 
 
 
+
 void Camera::setEye(float eyeX, float eyeY, float eyeZ) {
     this->eyeX = eyeX;
     this->eyeY = eyeY;

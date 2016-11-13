@@ -1,6 +1,10 @@
 #version 330
 
+uniform mat4 projection;
 uniform mat4 camera;
+uniform mat4 model;
+
+uniform vec3 cameraPos;
 
 uniform vec3 color;
 
@@ -10,5 +14,6 @@ in float id;
 out vec4 finalColor;
 
 void main() {
-    finalColor = 1.0 * vec4(color, 2);
+
+    finalColor = 1.0 * vec4(color, 0.2);
 }
