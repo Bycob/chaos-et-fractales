@@ -65,7 +65,7 @@ namespace runtime {
 
     /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
     /// lorsqu'il s'écoule 1 seconde.
-    double timeScale = 10;
+    double timeScale = 1000;
     /// Le pas de discrétisation physique de la simulation.
     double physicalStep = 0.004;
 }
@@ -96,6 +96,7 @@ void addPlanet(Planet planet);
 void createScene();
 /** J'ajoute le système solaire à la scène ! */
 void addSolarSystem();
+void addMooreSystem();
 
 
 
@@ -190,13 +191,7 @@ void updateTrajectoryVisibility() {
 
 void createScene() {
     runtime::scene = std::make_unique<Scene>();
-
-    Light light(LIGHT_POINT, 0, 0, 0);
-    runtime::scene->setLight(light);
-
-    //dist 1e10 m, mass 1e21 kg, tps 1e6 s, vit 1e4 m.s-1 -> G *= 1e3 (- 10*3 + 21 + 6*2)
     runtime::world = std::make_unique<World>();
-    runtime::world->setGravityConstant(GRAVITY_CONSTANT * 1e3);
 
     addSolarSystem();
 
@@ -204,6 +199,14 @@ void createScene() {
 }
 
 void addSolarSystem() {
+    //Constantes
+    Light light(LIGHT_POINT, 0, 0, 0);
+    runtime::scene->setLight(light);
+
+    //dist 1e10 m, mass 1e21 kg, tps 1e6 s, vit 1e4 m.s-1 -> G *= 1e3 (- 10*3 + 21 + 6*2)
+    runtime::world = std::make_unique<World>();
+    runtime::world->setGravityConstant(GRAVITY_CONSTANT * 1e3);
+
     //Rendus
     auto moonRender = std::make_shared<RenderableSphere>(0.8, 64, 64);
     moonRender->addTexturePath("assets/moon.png");
@@ -239,7 +242,7 @@ void addSolarSystem() {
     jupiterBody->setPosition(0, 77.8, 0);
     jupiterBody->setSpeed(-1.3, 0, 0);
 
-    auto sunBody = std::make_shared<Body>(1e9);
+    auto sunBody = std::make_shared<Body>(2e9);
 
     //Ajout des objets
     addPlanet({"sun", sunBody, sunRender});
@@ -247,6 +250,44 @@ void addSolarSystem() {
     //addPlanet({"moon", moonBody, moonRender});
     addPlanet({"mars", marsBody, marsRender});
     addPlanet({"jupiter", jupiterBody, jupiterRender});
+}
+
+void addMooreSystem() {
+    //Constantes
+    Light light(LIGHT_SUN, 1, 1, 1);
+    runtime::scene->setLight(light);
+
+    runtime::world->setGravityConstant(GRAVITY_CONSTANT);
+
+    //Rendus
+    auto body1Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
+
+    auto body2Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
+
+    auto body3Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
+
+    //Physique
+    auto body1body = std::make_shared<Body>(1.5e13);
+    body1body->setPosition(0, 0, 0);
+    body1body->setSpeed(10, 10, 0);
+
+    auto body2body = std::make_shared<Body>(1.5e13);
+    body2body->setPosition(10, 0, 0);
+    body2body->setSpeed(-5, -5, 0);
+
+    auto body3body = std::make_shared<Body>(1.5e13);
+    body3body->setPosition(-10, 0, 0);
+    body3body->setSpeed(-5, -5, 0);
+
+    //Ajout des objets
+    addPlanet({"body1", body1body, body1Render});
+    addPlanet({"body2", body2body, body2Render});
+    addPlanet({"body3", body3body, body3Render});
+
+    //couleurs des trajectoires (temporaires)
+    runtime::planets[0].trajectory->setColor(1, 0, 0);
+    runtime::planets[1].trajectory->setColor(0, 1, 0);
+    runtime::planets[2].trajectory->setColor(0, 0, 1);
 }
 
 
@@ -313,7 +354,7 @@ void start() {
 
         glClearColor(CLEAR_COLOR_R / 255.0f, CLEAR_COLOR_G / 255.0f, CLEAR_COLOR_B / 255.0f, 1);
     }
-    else {
+    else if (!parameters::pipeMode) {
         auto sigstop = [](int signum) {
             std::cout << "Simulation interrompue. Ecriture des données..." << std::endl;
             writeFiles();
@@ -345,7 +386,6 @@ void start() {
         }
         else {
 
-
             // Pour laisser le temps à python de respirer
             if (parameters::pipeMode) {
                 usleep(30000);
@@ -368,10 +408,12 @@ void stepSimulation() {
     const double baseStep = runtime::physicalStep;
     runtime::world->step(timeScale, (int) (timeScale / baseStep));
 
+    //Mise à jour des autres composants de l'application
     for (Planet &planet : runtime::planets) {
         auto &body = planet.body;
 
         if (body != nullptr) {
+            //Changement de repère des objets selon les paramètres
             double x = body->getX();
             double y = body->getY();
             double z = body->getZ();
@@ -388,14 +430,14 @@ void stepSimulation() {
                 planet.trajectory->addPoint((float) x, (float) y, (float) z);
             }
 
-            //Envoi des coordonnées dans le buffer
+            //Envoi des coordonnées dans le fichier
             std::string separator = ";";
             std::ostringstream stringstream;
             stringstream << runtime::world->getTime() << separator << x << separator << y << separator << z;
             planet.buffer.addLine(stringstream.str());
 
+            //Envoie des coordonnées sur la sortie stdout
             if (parameters::pipeMode) {
-                //Envoie des coordonnées sur la sortie stdout
                 std::cout << planet.name << ":" << stringstream.str() << std::endl;
             }
         }

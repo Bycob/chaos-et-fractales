@@ -47,7 +47,7 @@ private :
     std::map<std::string, std::shared_ptr<Program>> _programMap;
 
     Material _material;
-    Camera * _camera;
+    Camera * _camera = nullptr;
     Light _light;
 };
 

@@ -29,6 +29,8 @@ public :
     ///Effectue la simulation sur le nombre de secondes passées en paramètre.
     void step(double seconds, int increment = 1);
 private :
+    void euler(double seconds);
+
     std::vector<std::shared_ptr<Body>> bodies;
 
     ///Ce champs contient la valeur de la constante universelle de gravitation.
