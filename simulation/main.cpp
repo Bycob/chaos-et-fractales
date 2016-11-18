@@ -61,13 +61,13 @@ namespace runtime {
     bool enableTrajectory = true;
     /// Indique la planète qui est au centre du système. Si == -1,
     /// alors le centre du système se trouve en 0, 0
-    int originObject = 0;
+    int originObject = -1;
 
     /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
     /// lorsqu'il s'écoule 1 seconde.
-    double timeScale = 1000;
+    double timeScale = 2;
     /// Le pas de discrétisation physique de la simulation.
-    double physicalStep = 0.004;
+    double physicalStep = 0.0001;// TODO Anciennement 0.04 pour le système solaire - trouver une valeur ?
 }
 
 namespace parameters {
@@ -128,6 +128,8 @@ void input(GLFWwindow *window);
 void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
+///le séparateur
+bool _______IMPLEMENTATIONS__________________________________;
 
 //MAIN
 
@@ -193,7 +195,7 @@ void createScene() {
     runtime::scene = std::make_unique<Scene>();
     runtime::world = std::make_unique<World>();
 
-    addSolarSystem();
+    addMooreSystem();
 
     updateTrajectoryVisibility();
 }
@@ -261,19 +263,22 @@ void addMooreSystem() {
 
     //Rendus
     auto body1Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
+    body1Render->getMaterial().setDiffuse(1, 0, 0);
 
     auto body2Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
+    body2Render->getMaterial().setDiffuse(0, 1, 0);
 
     auto body3Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
+    body3Render->getMaterial().setDiffuse(0, 0, 1);
 
     //Physique
-    auto body1body = std::make_shared<Body>(1.5e13);
+    auto body1body = std::make_shared<Body>(1.501e13);
     body1body->setPosition(0, 0, 0);
-    body1body->setSpeed(10, 10, 0);
+    body1body->setSpeed(10.00, 10, 0);
 
     auto body2body = std::make_shared<Body>(1.5e13);
     body2body->setPosition(10, 0, 0);
-    body2body->setSpeed(-5, -5, 0);
+    body2body->setSpeed(-5.00, -5, 0);
 
     auto body3body = std::make_shared<Body>(1.5e13);
     body3body->setPosition(-10, 0, 0);
