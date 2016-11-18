@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by louis on 06/10/16.
 //
 
@@ -42,6 +42,7 @@ struct Planet {
 
 namespace runtime {
     std::string DATE;
+    std::string SESSION_NAME = "simulation";
 
     /// La fenêtre principale de la simulation
     std::unique_ptr<Window> window;
@@ -172,6 +173,8 @@ int main(int argc, char** argv) {
 }
 
 void writeFiles() {
+    
+    
     for (Planet &object : runtime::planets) {
         object.buffer.writeData();
     }
@@ -299,7 +302,7 @@ void addMooreSystem() {
 // -----
 
 Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render)
-        : name(name), body(body), render(render), buffer(name + "_" + runtime::DATE),
+        : name(name), body(body), render(render), buffer(runtime::SESSION_NAME + "/" + name + "_" + runtime::DATE),
           trajectory(std::make_shared<RenderableTrajectory>()) {
 
 }
