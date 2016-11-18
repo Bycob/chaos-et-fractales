@@ -2,6 +2,7 @@
 // Created by louis on 07/10/16.
 //
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>

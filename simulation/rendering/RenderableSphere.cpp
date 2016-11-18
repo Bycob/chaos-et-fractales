@@ -2,6 +2,7 @@
 // Created by louis on 06/11/16.
 //
 
+#define _USE_MATH_DEFINES
 #include <math.h>
 #include <iostream>
 #include <glad/glad.h>
