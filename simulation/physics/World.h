@@ -9,6 +9,7 @@
 
 #include <vector>
 #include <memory>
+#include <glm/glm.hpp>
 
 class Body;
 
@@ -29,7 +30,9 @@ public :
     ///Effectue la simulation sur le nombre de secondes passées en paramètre.
     void step(double seconds, int increment = 1);
 private :
-    void euler(double seconds);
+    void euler(double t);
+    glm::mat3x4 rungekuttaFunc3Bodies(glm::mat3x4 & in);
+    void rungekutta3Bodies(double t);
 
     std::vector<std::shared_ptr<Body>> bodies;
 
