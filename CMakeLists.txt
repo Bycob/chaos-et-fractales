@@ -12,7 +12,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
 file(GLOB_RECURSE
         SIMULATION_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/simulation/*.cpp)
+        ${CMAKE_CURRENT_SOURCE_DIR}/simulation/*.cpp
+		${CMAKE_CURRENT_SOURCE_DIR}/simulation/*.h)
 
 file(GLOB_RECURSE
         GLAD_SOURCES

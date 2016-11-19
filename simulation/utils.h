@@ -4,7 +4,17 @@
 
 #include <thread>
 #include <chrono>
+#include <fstream>
 #include <glm/glm.hpp>
+#include <sys/stat.h>
+
+inline void createDirectory(std::string directory) {
+#ifdef _WIN32
+    _mkdir(directory.c_str());
+#else
+    mkdir(directory.c_str(), 700);
+#endif
+}
 
 inline void sleep(float ms) {
     std::this_thread::sleep_for(std::chrono::microseconds((int) (ms * 1000)));
