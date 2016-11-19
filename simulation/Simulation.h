@@ -48,6 +48,8 @@ public :
     void writeFiles();
 
 private :
+    void parse(std::string loadedFile);
+
     std::string _name;
     std::string _date;
 

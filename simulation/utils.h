@@ -5,6 +5,7 @@
 #include <thread>
 #include <chrono>
 #include <fstream>
+#include <sstream>
 #include <glm/glm.hpp>
 #include <sys/stat.h>
 
@@ -36,4 +37,36 @@ inline glm::vec3 randBrightColor() {
     return glm::vec3(r, g, b);
 }
 
+inline std::vector<std::string> split(const std::string & splitted, const char delim, bool trimEmpty = false) {
+    std::vector<std::string> result;
+    std::stringstream ss;
+    ss.str(splitted);
+    std::string line;
 
+    while (getline(ss, line, delim)) {
+        if (trimEmpty && line.size() == 0) continue;
+        result.push_back(line);
+    }
+    return result;
+}
+
+inline std::string trimSpaces(const std::string & item) {
+    int startIndex = 0, endIndex = item.size();
+    for (int i = 0 ; i < item.size() ; i++) {
+        if (item[i] == ' ' || item[i] == '\t') {
+            startIndex++;
+        }
+        else {
+            break;
+        }
+    }
+    for (int i = endIndex - 1 ; i >= startIndex ; i++) {
+        if (item[i] == ' ' || item[i] == '\t') {
+            endIndex--;
+        }
+        else {
+            break;
+        }
+    }
+    return item.substr(startIndex, endIndex);
+}

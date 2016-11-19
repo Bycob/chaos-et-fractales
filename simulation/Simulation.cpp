@@ -2,8 +2,10 @@
 // Created by louis on 19/11/16.
 //
 
+#include <fstream>
 #include <sstream>
 #include <iostream>
+#include <regex>
 
 #include "Simulation.h"
 #include "utils.h"
@@ -30,8 +32,93 @@ Simulation::Simulation(std::string name) : _name(name),
 
 Simulation::Simulation(std::string name, std::string loadFile) : Simulation(name) {
 
+    std::ifstream file(loadFile);
+    std::string contents = "";
+    std::string line;
+
+    if (file.is_open()) {
+        while (getline(file, line)) {
+            contents += line + "\n";
+        }
+        file.close();
+    }
+    else {
+        throw std::runtime_error("simulation file not found : " + loadFile);
+    }
+
+    parse(contents);
 }
 
+void Simulation::parse(std::string loadedFile) {
+    std::vector<std::string> lines = split(loadedFile, '\n', true);
+
+    bool parsingStarted = false;
+
+    for (auto &line : lines) {
+        //Parametres généraux
+        if (line.size() > 0 && line.at(0) == '#') {
+            //On ne prend en compte la ligne que si c'est la première du fichier
+            if (parsingStarted) {
+                return;
+            } else {
+                parsingStarted = true;
+                std::string paramsLine = line.substr(1);
+                std::vector<std::string> params = split(paramsLine, ';', true);
+
+                //Analyse de chaque paramètre
+                for (std::string &param : params) {
+                    std::vector<std::string> keyvalue = split(param, '=', true);
+                    if (keyvalue.size() != 2) continue;
+
+                    std::string key = trimSpaces(keyvalue[0]);
+                    std::string value = trimSpaces(keyvalue[1]);
+
+                    //Paramètrage de la scène en fonction du couple key, value
+                    if (key == "name") {
+                        //TODO vérifier le nom valide
+                        _name = value;
+                    } else if (key == "") {
+
+                    }
+                }
+            }
+        }
+        //Line
+        else {
+            std::vector<std::string> params = split(line, ';', true);
+
+            std::string name = "";
+
+
+            for (std::string &param : params) {
+                std::vector<std::string> keyvalue = split(param, '=', true);
+                if (keyvalue.size() != 2) continue;
+
+                std::string key = trimSpaces(keyvalue[0]);
+                std::string value = trimSpaces(keyvalue[1]);
+
+                //Analyse de chaque paire clé / valeur.
+                if (key == "name") {
+                    //TODO vérifier la conformiter du nom
+                    name = value;
+                }
+                else if (key == "position") {
+
+                }
+            }
+
+            if (name != "") {
+                parsingStarted = true;
+
+                auto body = std::make_shared<Body>();
+                auto render = std::make_shared<RenderableSphere>();
+                Planet toAdd(name, body, render);
+
+                addPlanet(toAdd);
+            }
+        }
+    }
+}
 
 void Simulation::setRVBTrajectory() {
     if (_planets.size() < 3) return;
