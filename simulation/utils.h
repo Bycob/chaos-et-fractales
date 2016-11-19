@@ -2,6 +2,9 @@
 // Created by louis on 13/11/16.
 //
 
+#ifndef SIMULATION_UTILS_H
+#define SIMULATION_UTILS_H
+
 #include <thread>
 #include <chrono>
 #include <fstream>
@@ -70,3 +73,5 @@ inline std::string trimSpaces(const std::string & item) {
     }
     return item.substr(startIndex, endIndex);
 }
+
+#endif // SIMULATION_UTILS_H
