@@ -20,7 +20,7 @@ struct Planet {
     std::shared_ptr<Body> body;
     std::shared_ptr<RenderableSphere> render;
     std::shared_ptr<RenderableTrajectory> trajectory;
-    FileBuffer buffer;
+    std::shared_ptr<FileBuffer> buffer;
 
     Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render);
 };

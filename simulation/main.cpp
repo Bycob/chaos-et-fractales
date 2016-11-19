@@ -136,7 +136,7 @@ int main(int argc, char** argv) {
 
 
 void createScene() {
-    runtime::simulation = std::make_unique<Simulation>("simulation");
+    runtime::simulation = std::make_unique<Simulation>("files");
     addMooreSystem();
 
     runtime::simulation->setTrajectoryVisibility(runtime::enableTrajectory);

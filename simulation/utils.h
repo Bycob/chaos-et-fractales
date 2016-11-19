@@ -12,7 +12,7 @@ inline void createDirectory(std::string directory) {
 #ifdef _WIN32
     _mkdir(directory.c_str());
 #else
-    mkdir(directory.c_str(), 700);
+    mkdir(directory.c_str(), 0700);
 #endif
 }
 

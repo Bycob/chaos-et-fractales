@@ -14,7 +14,7 @@
 #include "rendering/RenderableTrajectory.h"
 
 Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render)
-        : name(name), body(body), render(render), buffer(""),
+        : name(name), body(body), render(render), buffer(std::make_shared<FileBuffer>("")),
           trajectory(std::make_shared<RenderableTrajectory>()) {
 
 }
@@ -54,7 +54,7 @@ void Simulation::addPlanet(Planet planet) {
         glm::vec3 color = randBrightColor();
         planet.trajectory->setColor(color.r, color.g, color.b);
     }
-    planet.buffer.setFilename(_name + "/" + planet.name);
+    planet.buffer->setFilename(_name + "/" + planet.name);
 }
 
 Planet& Simulation::getPlanet(int index) {
@@ -119,7 +119,7 @@ void Simulation::update(double time, bool printInfos) {
             std::string separator = ";";
             std::ostringstream stringstream;
             stringstream << _world->getTime() << separator << x << separator << y << separator << z;
-            planet.buffer.addLine(stringstream.str());
+            planet.buffer->addLine(stringstream.str());
 
             //Envoie des coordonnées sur la sortie stdout
             if (printInfos) {
@@ -133,6 +133,6 @@ void Simulation::writeFiles() {
     createDirectory(_name);
 
     for (Planet &object : _planets) {
-        object.buffer.writeData();
+        object.buffer->writeData();
     }
 }
