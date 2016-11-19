@@ -2,6 +2,7 @@
 // Created by louis on 06/10/16.
 //
 
+#include <algorithm>
 #include <math.h>
 #include <iostream>
 #include <sstream>
@@ -33,6 +34,8 @@
 //DECLARATIONS
 
 namespace runtime {
+    bool running = true;
+
     /// La fenêtre principale de la simulation
     std::unique_ptr<Window> window;
     /// L'objet Simulation qui contient les planètes
@@ -123,8 +126,6 @@ int main(int argc, char** argv) {
 
     createScene();
     start();
-
-    runtime::simulation->writeFiles();
 
     return 0;
 }
@@ -244,7 +245,7 @@ void addMooreSystem() {
 
 
 void start() {
-    bool running = true;
+    runtime::running = true;
 
     if (parameters::enableRender) {
         runtime::window = std::make_unique<Window>();
@@ -255,12 +256,9 @@ void start() {
         glClearColor(CLEAR_COLOR_R / 255.0f, CLEAR_COLOR_G / 255.0f, CLEAR_COLOR_B / 255.0f, 1);
     }
     else if (!parameters::pipeMode) {
-        auto sigstop = [](int signum) {
+        auto sigstop = [] (int signum) {
             std::cout << "Simulation interrompue. Ecriture des données..." << std::endl;
-            runtime::simulation->writeFiles();
-            std::cout << "Données écrites" << std::endl;
-
-            std::exit(0);
+            runtime::running = false;
         };
 
         std::signal(SIGINT, sigstop);
@@ -269,20 +267,32 @@ void start() {
         std::cout << "Démarrage de la simulation. Ctrl-C pour interrompre la simulation." << std::endl;
     }
 
-    while (running) {
+    while (runtime::running) {
+        auto before = std::chrono::system_clock::now();
+
         runtime::simulation->update(1.0 / parameters::fps, parameters::pipeMode);
 
         if (parameters::enableRender) {
+
+            //Rendu
             runtime::window->setupFrame();
+
             input(runtime::window->window());
             runtime::simulation->scene().render(runtime::window->context());
 
             runtime::window->finalizeFrame();
-            sleep(1.0f / parameters::fps); //TODO stabiliser le fps
 
+            //Mise à jour du flag
             if (runtime::window->shouldClose()) {
-                running = false;
+                runtime::running = false;
             }
+
+            //Dormir
+            auto after = std::chrono::system_clock::now();
+            float elapsed = std::chrono::duration_cast<std::chrono::microseconds>(after - before).count() / 1000000.0f;
+
+            sleep(std::max(1.0f / parameters::fps - elapsed, 0.0f));
+            std::cout << elapsed << std::endl;
         }
         else {
 
@@ -293,8 +303,14 @@ void start() {
         }
     }
 
+    //Ecriture des fichiers contenant les données.
+    runtime::simulation->writeFiles();
+
     if (parameters::enableRender) {
         runtime::window->destroy();
+    }
+    else if (!parameters::pipeMode) {
+        std::cout << "Données écrites" << std::endl;
     }
 }
 

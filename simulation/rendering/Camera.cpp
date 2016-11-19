@@ -51,7 +51,7 @@ void Traveling::update(Camera &camera) {
     auto now = std::chrono::system_clock::now();
     auto timeElapsed = now - this->timeStarted;
 
-    float ratio = std::chrono::duration_cast<std::chrono::microseconds>(now - this->timeStarted).count()
+    float ratio = std::chrono::duration_cast<std::chrono::microseconds>(timeElapsed).count()
                   / (float) 1000000.0 / this->duration;
 
     if (ratio >= 1) this->finished = true;
