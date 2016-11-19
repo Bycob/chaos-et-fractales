@@ -15,6 +15,7 @@ class Camera;
 class Light;
 class Context;
 class Renderable;
+class RenderableSphere;
 
 class Scene {
 
@@ -24,11 +25,14 @@ public :
     Camera& camera() {return _camera;}
 
     void setLight(Light &light);
+    void setSphereMap(std::string texture);
 
     void addObject(std::shared_ptr<Renderable> renderable);
 
     void render(Context *context);
 private :
+    std::unique_ptr<RenderableSphere> _sphereMap;
+
     Camera _camera;
     Light _light;
 

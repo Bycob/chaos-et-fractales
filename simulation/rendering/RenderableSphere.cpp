@@ -25,6 +25,10 @@ void RenderableSphere::render(Context *context, Scene *scene) {
 
     if (!compiled) buildModelData(context);
 
+    if (_specialShader != "") {
+        context->setCurrentProgram(_specialShader);
+    }
+
     //Translation
     glm::mat4x4 model = glm::translate(glm::mat4x4(), glm::tvec3<float>(this->x, this->y, this->z));
     context->program().setUniformMatrix4("model", model);

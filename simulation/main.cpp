@@ -139,8 +139,9 @@ int main(int argc, char** argv) {
 void createScene() {
     runtime::simulation = std::make_unique<Simulation>("files");
     addMooreSystem();
-
     runtime::simulation->setTrajectoryVisibility(runtime::enableTrajectory);
+
+    runtime::simulation->scene().setSphereMap("assets/galaxy.png");
 }
 
 void addSolarSystem() {
@@ -292,7 +293,7 @@ void start() {
             float elapsed = std::chrono::duration_cast<std::chrono::microseconds>(after - before).count() / 1000000.0f;
 
             sleep(std::max(1.0f / parameters::fps - elapsed, 0.0f));
-            std::cout << elapsed << std::endl;
+            //std::cout << elapsed << std::endl; // -> profiling
         }
         else {
 

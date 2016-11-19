@@ -110,8 +110,8 @@ void Simulation::parse(std::string loadedFile) {
             if (name != "") {
                 parsingStarted = true;
 
-                auto body = std::make_shared<Body>();
-                auto render = std::make_shared<RenderableSphere>();
+                auto body = std::make_shared<Body>(5);
+                auto render = std::make_shared<RenderableSphere>(1, 64, 64);
                 Planet toAdd(name, body, render);
 
                 addPlanet(toAdd);

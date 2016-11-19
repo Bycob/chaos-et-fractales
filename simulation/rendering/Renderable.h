@@ -19,6 +19,10 @@ public :
     void setActive(bool active) {this->active = active;}
 
     bool usesBlendMode() {return _usesBlendMode;}
+    void setSpecialShader(std::string specialShader) {
+        this->_specialShader = specialShader;
+        compiled = false;
+    }
 
 protected :
     Renderable();
@@ -31,12 +35,14 @@ protected :
 
     bool active = true;
 
+    ///si false, le VAO doit être réinitialisé avant le prochain dessin.
     bool compiled = false;
     GLuint gVAO = 0;
     GLuint vertexBuffer = 0;
 
     //---
     bool _usesBlendMode = false;
+    std::string _specialShader = "";
 };
 
 class RenderableModel : public Renderable {

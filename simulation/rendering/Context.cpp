@@ -16,6 +16,7 @@
 Context::Context(GLFWwindow *window) : _window(window) {
     loadProgram("default", "shaders/default_vertex_shader.glslv", "shaders/default_fragment_shader.glslf");
     loadProgram("trajectory", "shaders/trajectory_vert_shader.glslv", "shaders/trajectory_frag_shader.glslf");
+    loadProgram("cubemap", "shaders/cubemap_vertex_shader.glslv", "shaders/cubemap_fragment_shader.glslf");
 
     setCurrentProgram("default");
 }

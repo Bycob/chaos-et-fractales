@@ -11,17 +11,19 @@
 #include "Context.h"
 #include "Camera.h"
 #include "Program.h"
+#include "RenderableSphere.h"
 
-Scene::Scene() : _camera(), _light() {
+Scene::Scene() : _camera(), _light(), _sphereMap(nullptr) {
 
 }
 
 void Scene::render(Context *context) {
-    int width, height;
-    context->getWindowDimensions(width, height);
-
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
+
+    //Paramètrage du contexte
+    int width, height;
+    context->getWindowDimensions(width, height);
 
     context->program().use();
 
@@ -31,6 +33,14 @@ void Scene::render(Context *context) {
     context->setCamera(_camera);
     context->setLight(_light);
 
+    //Rendu de la spheremap
+    glDepthMask(GL_FALSE);
+    if (this->_sphereMap != nullptr) {
+        this->_sphereMap->render(context, this);
+    }
+    glDepthMask(GL_TRUE);
+
+    //Rendu de tous les objets
     for (auto object : objects) {
         context->setCurrentProgram("");
         object->render(context, this);
@@ -41,6 +51,17 @@ void Scene::render(Context *context) {
 
 void Scene::setLight(Light &light) {
     this->_light = light;
+}
+
+void Scene::setSphereMap(std::string texturePath) {
+    if (texturePath == "") {
+        this->_sphereMap = nullptr;
+    }
+    else {
+        this->_sphereMap = std::make_unique<RenderableSphere>(5, 64, 64);
+        this->_sphereMap->addTexturePath(texturePath);
+        this->_sphereMap->setSpecialShader("cubemap");
+    }
 }
 
 void Scene::addObject(std::shared_ptr<Renderable> renderable) {
