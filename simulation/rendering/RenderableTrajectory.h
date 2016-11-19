@@ -11,7 +11,7 @@
 
 class RenderableTrajectory : public Renderable {
 public :
-    RenderableTrajectory(int maxPointCount = 20000);
+    RenderableTrajectory(int maxPointCount = 2000);
 
     void setColor(float r, float g, float b);
     void addPoint(float x, float y, float z);

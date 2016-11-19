@@ -36,6 +36,7 @@ void RenderableTrajectory::render(Context *context, Scene *scene) {
     context->setCurrentProgram("trajectory");
 
     context->program().setUniform3f("color", color.r, color.g, color.b);
+    context->program().setUniform1i("count", points.size());
 
     glDepthMask(GL_FALSE);
 

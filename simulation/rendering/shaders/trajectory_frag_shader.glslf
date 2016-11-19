@@ -8,6 +8,8 @@ uniform vec3 cameraPos;
 
 uniform vec3 color;
 
+uniform int count;
+
 in vec3 fragVert;
 in float id;
 
@@ -15,5 +17,5 @@ out vec4 finalColor;
 
 void main() {
 
-    finalColor = 1.0 * vec4(color, 0.4);
+    finalColor = vec4(max((id + 50 - count) / 40.0, 0)) + vec4(color, 0.4);
 }
