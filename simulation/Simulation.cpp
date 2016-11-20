@@ -120,12 +120,16 @@ void Simulation::parse(std::string loadedFile) {
     }
 }
 
-void Simulation::setRVBTrajectory() {
+void Simulation::set3BodiesSpecial() {
     if (_planets.size() < 3) return;
 
     _planets[0].trajectory->setColor(1, 0, 0);
     _planets[1].trajectory->setColor(0, 1, 0);
     _planets[2].trajectory->setColor(0, 0, 1);
+
+    _planets[0].render->getMaterial().setSpecular(1, 1, 1);
+    _planets[1].render->getMaterial().setSpecular(1, 1, 1);
+    _planets[2].render->getMaterial().setSpecular(1, 1, 1);
 }
 
 void Simulation::addPlanet(Planet planet) {

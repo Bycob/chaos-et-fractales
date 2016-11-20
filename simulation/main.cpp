@@ -233,7 +233,7 @@ void addMooreSystem() {
     runtime::simulation->addPlanet({"body3", body3body, body3Render});
 
     //couleurs des trajectoires (temporaires)
-    runtime::simulation->setRVBTrajectory();
+    runtime::simulation->set3BodiesSpecial();
 }
 
 

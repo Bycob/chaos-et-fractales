@@ -21,7 +21,13 @@ private :
     int maxPointCount;
     bool pointsUpdated;
     std::list<glm::vec3> points;
+
     glm::vec3 color;
+
+    GLuint tangentBuffer;
+
+    virtual void regenerateBuffers();
+    virtual void deleteBuffers();
 
     /// met à jour le tableau de points
     void buildRenderData(Context *context);

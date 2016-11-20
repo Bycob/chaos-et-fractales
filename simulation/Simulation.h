@@ -31,7 +31,7 @@ public :
     Simulation(std::string name);
     Simulation(std::string name, std::string loadFile);
 
-    void setRVBTrajectory();
+    void set3BodiesSpecial();
 
     Scene & scene() {return *this->_scene;}
     World & world() {return *this->_world;}
