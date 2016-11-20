@@ -11,10 +11,11 @@
 #include <sstream>
 #include <glm/glm.hpp>
 #include <sys/stat.h>
+#include <direct.h>
 
 inline void createDirectory(std::string directory) {
 #ifdef _WIN32
-    _mkdir(directory.c_str());
+    mkdir(directory.c_str());
 #else
     mkdir(directory.c_str(), 0700);
 #endif
