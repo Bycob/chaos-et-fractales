@@ -11,7 +11,10 @@
 #include <sstream>
 #include <glm/glm.hpp>
 #include <sys/stat.h>
+
+#ifdef _WIN32
 #include <direct.h>
+#endif
 
 inline void createDirectory(std::string directory) {
 #ifdef _WIN32
