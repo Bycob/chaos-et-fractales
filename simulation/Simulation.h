@@ -44,8 +44,13 @@ public :
 
     void setCameraPlanet(int planet);
     void setTrajectoryVisibility(bool visible);
+    void setPlanetVisibility(bool visible);
     void setShadowSimulation(bool shadow);
 
+    void setPaused(bool paused);
+    void togglePaused();
+    void setReverse(bool reverse);
+    void toggleReverse();
     void update(double time, bool printInfos = false);
 
     void writeFiles();
@@ -64,6 +69,11 @@ private :
     /// Indique la planète qui est au centre du système. Si == -1,
     /// alors le centre du système se trouve en 0, 0
     int _originObject = -1;
+    /// Indique si la simulation est arrêtée
+    bool _pause = false;
+    /// Indique si le temps de la simulation s'écoule à l'envers
+    bool _reverse = false;
+
     /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
     /// lorsqu'il s'écoule 1 seconde.
     double _timeScale = 2;

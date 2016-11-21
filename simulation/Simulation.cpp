@@ -177,6 +177,14 @@ void Simulation::setTrajectoryVisibility(bool visible) {
     }
 }
 
+void Simulation::setPlanetVisibility(bool visible) {
+    for (Planet &planet : _planets) {
+        if (planet.render != nullptr) {
+            planet.render->setActive(visible);
+        }
+    }
+}
+
 void Simulation::setShadowSimulation(bool shadow) {
     _isShadow = shadow;
 
@@ -190,12 +198,32 @@ void Simulation::setShadowSimulation(bool shadow) {
     }
 }
 
+void Simulation::setPaused(bool paused) {
+    _pause = paused;
+}
+
+void Simulation::togglePaused() {
+    setPaused(!_pause);
+}
+
+void Simulation::setReverse(bool reverse) {
+    _reverse = reverse;
+}
+
+void Simulation::toggleReverse() {
+    setReverse(!_reverse);
+}
+
 void Simulation::update(double time, bool printInfos) {
+    if (_pause) return;
     
     //Mise à jour du monde (précision ~ 1h) t*10e6
-    const double timeScale = _timeScale * time;
+    const double timeScale = _timeScale * time * (_reverse ? -1 : 1);
     const double baseStep = _physicalStep;
-    _world->step(timeScale, (int) (timeScale / baseStep));
+    _world->step(timeScale, (int) fabs(timeScale / baseStep));
+
+    vec3 speed = _world->getSystemLinearMomentum();
+    printf("%.20f %.20f %.20f\n", speed.x, speed.y, speed.z);
 
     //Mise à jour des autres composants de l'application
     for (Planet &planet : _planets) {

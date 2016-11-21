@@ -78,6 +78,8 @@ void RenderableTrajectory::buildRenderData(Context *context) {
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
+
+    this->compiled = true;
 }
 
 void RenderableTrajectory::updatePoints(Context *context) {

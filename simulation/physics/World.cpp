@@ -16,10 +16,34 @@ void World::addObject(std::shared_ptr<Body> body) {
     this->bodies.push_back(body);
 }
 
+vec3 World::getSystemLinearMomentum() {
+    vec3 result(0.0, 0.0, 0.0);
+
+    for (auto &body : bodies) {
+        vec3 speed(body->vx, body->vy, body->vz);
+        result += speed * body->mass;
+    }
+
+    return result;
+}
+
+vec3 World::getSystemPosition() {
+    vec3 result(0.0, 0.0, 0.0);
+
+    for (auto &body : bodies) {
+        vec3 position(body->x, body->y, body->z);
+        result += position;
+    }
+
+    return result;
+}
+
 void World::step(double seconds, int increment) {
     time += seconds;
 
-    double timeUnit = seconds / increment;
+    double sign = seconds > 0 ? 1 : -1;
+    seconds = fabs(seconds);
+    double timeUnit = fabs(seconds / increment);
     double threshold = timeUnit * 1.5;
     bool simulation = true;
 
@@ -34,7 +58,7 @@ void World::step(double seconds, int increment) {
         }
 
         //CALCUL DES NOUVELLES VARIABLES POUR TOUS LES CORPS
-        rungekutta3Bodies(timeUnit);
+        rungekutta3Bodies(sign * timeUnit);
     }
 }
 
@@ -69,8 +93,8 @@ void World::euler(double t) {
 }
 
 
-glm::mat3x4 World::rungekuttaFunc3Bodies(glm::mat3x4 & in) {
-    glm::mat3x4 out(
+mat3x4 World::rungekuttaFunc3Bodies(mat3x4 & in) {
+    mat3x4 out(
             in[0][2], in[0][3], 0, 0,
             in[1][2], in[1][3], 0, 0,
             in[2][2], in[2][3], 0, 0
@@ -83,8 +107,8 @@ glm::mat3x4 World::rungekuttaFunc3Bodies(glm::mat3x4 & in) {
             double length = bodies[i]->distance(*bodies[j]);
             if (length == 0) continue;
 
-            out[i][2] = (float) (out[i][2] + G * bodies[j]->mass * (in[j][0] - in[i][0]) / (length * length * length));
-            out[i][3] = (float) (out[i][3] + G * bodies[j]->mass * (in[j][1] - in[i][1]) / (length * length * length));
+            out[i][2] = out[i][2] + G * bodies[j]->mass * (in[j][0] - in[i][0]) / (length * length * length);
+            out[i][3] = out[i][3] + G * bodies[j]->mass * (in[j][1] - in[i][1]) / (length * length * length);
         }
     }
 
@@ -94,16 +118,16 @@ glm::mat3x4 World::rungekuttaFunc3Bodies(glm::mat3x4 & in) {
 void World::rungekutta3Bodies(double t) {
     if (bodies.size() != 3) return;
 
-    glm::mat3x4 M(bodies[0]->x, bodies[0]->y, bodies[0]->vx, bodies[0]->vy,
+    mat3x4 M(bodies[0]->x, bodies[0]->y, bodies[0]->vx, bodies[0]->vy,
                   bodies[1]->x, bodies[1]->y, bodies[1]->vx, bodies[1]->vy,
                   bodies[2]->x, bodies[2]->y, bodies[2]->vx, bodies[2]->vy);
 
     auto k1 = rungekuttaFunc3Bodies(M);
-    auto M2 = M + k1 * (float) (t / 2);
+    auto M2 = M + k1 * (t / 2);
     auto k2 = rungekuttaFunc3Bodies(M2);
-    auto M3 = M + k2 * (float) (t / 2);
+    auto M3 = M + k2 * (t / 2);
     auto k3 = rungekuttaFunc3Bodies(M3);
-    auto M4 = M + k3 * (float) t;
+    auto M4 = M + k3 * t;
     auto k4 = rungekuttaFunc3Bodies(M4);
 
     bodies[0]->x += (t / 6) * (k1[0][0] + 2 * k2[0][0] + 2 * k3[0][0] + k4[0][0]);

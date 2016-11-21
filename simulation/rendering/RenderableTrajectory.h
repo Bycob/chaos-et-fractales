@@ -9,9 +9,11 @@
 #include <list>
 #include "Renderable.h"
 
+#define DEFAULT_MAX_POINT_COUNT 20000
+
 class RenderableTrajectory : public Renderable {
 public :
-    RenderableTrajectory(int maxPointCount = 2000);
+RenderableTrajectory(int maxPointCount = DEFAULT_MAX_POINT_COUNT);
 
     void setColor(float r, float g, float b);
     void addPoint(float x, float y, float z);

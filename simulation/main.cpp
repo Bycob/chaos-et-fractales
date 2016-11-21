@@ -391,9 +391,21 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
                 runtime::simulation->setCameraPlanet(runtime::currentPlanet);
             }
         }
+        // Toggle trajectoires
         else if (key == GLFW_KEY_T) {
             runtime::enableTrajectory = ! runtime::enableTrajectory;
             runtime::simulation->setTrajectoryVisibility(runtime::enableTrajectory);
+        }
+        // Pause / Lancement
+        else if (key == GLFW_KEY_SPACE) {
+            runtime::simulation->togglePaused();
+        }
+        // Sens d'avance de la simulation
+        else if (key == GLFW_KEY_F) {
+            runtime::simulation->setReverse(false);
+        }
+        else if (key == GLFW_KEY_B) {
+            runtime::simulation->setReverse(true);
         }
     }
 }
