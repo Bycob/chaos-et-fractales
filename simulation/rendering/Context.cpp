@@ -6,6 +6,7 @@
 #include <iostream>
 #include <glad/glad.h>
 
+#include "../utils.h"
 #include "Context.h"
 #include "Light.h"
 #include "Material.h"
@@ -17,6 +18,7 @@ Context::Context(GLFWwindow *window) : _window(window) {
     loadProgram("default", "shaders/default_vertex_shader.glslv", "shaders/default_fragment_shader.glslf");
     loadProgram("trajectory", "shaders/trajectory_vert_shader.glslv", "shaders/trajectory_frag_shader.glslf");
     loadProgram("cubemap", "shaders/cubemap_vertex_shader.glslv", "shaders/cubemap_fragment_shader.glslf");
+    loadProgram("2D", "shaders/2D_vertex_shader.glslv", "shaders/2D_fragment_shader.glslf");
 
     setCurrentProgram("default");
 }
@@ -31,15 +33,26 @@ void Context::getWindowDimensions(int &width, int &height) {
 }
 
 void Context::setup() {
-    this->_light.pushLight(this);
-    this->_material.pushMaterial(this);
+    if (startsWith(_currentProgram, "2D")) {
+        glm::mat3x3 model;
+        program().setUniformMatrix3("model", model);
 
-    if (this->_camera != nullptr) {
-        this->_camera->setCameraView(this);
+        int width, height;
+        getWindowDimensions(width, height);
+        program().setUniform1i("screen.width", width);
+        program().setUniform1i("screen.height", height);
     }
+    else {
+        this->_light.pushLight(this);
+        this->_material.pushMaterial(this);
 
-    glm::mat4x4 model;
-    program().setUniformMatrix4("model", model);
+        if (this->_camera != nullptr) {
+            this->_camera->setCameraView(this);
+        }
+
+        glm::mat4x4 model;
+        program().setUniformMatrix4("model", model);
+    }
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -62,8 +75,14 @@ void Context::setCamera(Camera &camera) {
 }
 
 void Context::setCurrentProgram(std::string currentProgramID) {
+    // Si le nom de programme est inconnu, alors on charge le programme par défaut
     if (_programMap.find(currentProgramID) == _programMap.end()) {
         currentProgramID = _defaultProgram;
+    }
+
+    // Si le programme est déjà bon, pas besoin de resetup
+    if (currentProgramID == _currentProgram && program().isInUse()) {
+        return;
     }
 
     this->_currentProgram = currentProgramID;

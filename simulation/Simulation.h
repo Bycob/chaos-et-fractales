@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "SpeedIndicator.h"
 #include "FileBuffer.h"
 
 #define SHADOW_ALPHA 0.2f
@@ -86,6 +87,8 @@ private :
     std::unique_ptr<World> _world = nullptr;
     /// L'ensemble des planètes de la simulation.
     std::vector<Planet> _planets;
+    /// L'indicateur graphique de vitesse.
+    std::shared_ptr<SpeedIndicator> _speedIndicator;
 };
 
 

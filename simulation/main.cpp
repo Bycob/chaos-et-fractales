@@ -46,8 +46,10 @@ namespace runtime {
     /// 0, 0
     int currentPlanet = 0;
 
-    /** Si true, alors les trajectoires  */
+    /** Si true, alors les trajectoires sont visibles */
     bool enableTrajectory = true;
+    /// Si true alors on voit les planètes.
+    bool displayPlanets = true;
 }
 
 namespace parameters {
@@ -138,8 +140,10 @@ int main(int argc, char** argv) {
 
 void createScene() {
     runtime::simulation = std::make_unique<Simulation>("files");
-    addMooreSystem();
+    addSolarSystem();
+
     runtime::simulation->setTrajectoryVisibility(runtime::enableTrajectory);
+    runtime::simulation->setPlanetVisibility(runtime::displayPlanets);
 
     runtime::simulation->scene().setSphereMap("assets/galaxy.png");
 }
@@ -395,6 +399,10 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
         else if (key == GLFW_KEY_T) {
             runtime::enableTrajectory = ! runtime::enableTrajectory;
             runtime::simulation->setTrajectoryVisibility(runtime::enableTrajectory);
+        }
+        else if (key == GLFW_KEY_P) {
+            runtime::displayPlanets = ! runtime::displayPlanets;
+            runtime::simulation->setPlanetVisibility(runtime::displayPlanets);
         }
         // Pause / Lancement
         else if (key == GLFW_KEY_SPACE) {

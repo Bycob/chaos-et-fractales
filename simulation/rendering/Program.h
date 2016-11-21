@@ -26,6 +26,7 @@ public :
     GLuint uniform(std::string uniformName);
 
     void setUniformMatrix4(std::string uniformName, glm::mat4 &matrix);
+    void setUniformMatrix3(std::string uniformName, glm::mat3 &matrix);
     void setUniform3f(std::string uniformName, const GLfloat &x, const GLfloat &y, const GLfloat &z);
     void setUniform1i(std::string uniformName, const GLint &value);
     void setUniform1f(std::string uniformName, const GLfloat &value);

@@ -13,11 +13,15 @@
 
 
 Renderable::Renderable() {
-
+    
 }
 
 Renderable::~Renderable() {
     deleteBuffers();
+}
+
+bool Renderable::shouldRender() {
+    return this->active;
 }
 
 void Renderable::regenerateBuffers() {
@@ -26,6 +30,8 @@ void Renderable::regenerateBuffers() {
     glGenVertexArrays(1, &this->gVAO);
 
     glGenBuffers(1, &this->vertexBuffer);
+    glGenBuffers(1, &this->normalBuffer);
+    glGenBuffers(1, &this->texCoordBuffer);
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(this->gVAO);
@@ -40,6 +46,16 @@ void Renderable::deleteBuffers() {
     if (this->vertexBuffer != 0) {
         glDeleteBuffers(1, &this->vertexBuffer);
         this->vertexBuffer = 0;
+    }
+
+    if (this->normalBuffer != 0) {
+        glDeleteBuffers(1, &this->normalBuffer);
+        this->normalBuffer = 0;
+    }
+
+    if (this->texCoordBuffer != 0) {
+        glDeleteBuffers(1, &this->texCoordBuffer);
+        this->texCoordBuffer = 0;
     }
 }
 
@@ -75,27 +91,6 @@ void RenderableModel::setMaterial(Material &material) {
 void RenderableModel::addTexturePath(std::string path) {
     this->texturePaths.push_back(path);
     this->compiled = false;
-}
-
-void RenderableModel::regenerateBuffers() {
-    Renderable::regenerateBuffers();
-
-    glGenBuffers(1, &this->normalBuffer);
-    glGenBuffers(1, &this->texCoordBuffer);
-}
-
-void RenderableModel::deleteBuffers() {
-    Renderable::deleteBuffers();
-
-    if (this->normalBuffer != 0) {
-        glDeleteBuffers(1, &this->normalBuffer);
-        this->normalBuffer = 0;
-    }
-
-    if (this->texCoordBuffer != 0) {
-        glDeleteBuffers(1, &this->texCoordBuffer);
-        this->texCoordBuffer = 0;
-    }
 }
 
 void RenderableModel::loadTextures() {

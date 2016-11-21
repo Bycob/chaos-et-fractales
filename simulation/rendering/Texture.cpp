@@ -13,17 +13,26 @@ Texture Texture::load(std::string path) {
     cimg_library::CImg<unsigned char> image = cimg_library::CImg<>(path.c_str()).normalize(0, 255);
     int width = image.width();
     int height = image.height();
-    unsigned char * pixels = new unsigned char[width * height * 3];
+    int size = image.spectrum();
+    unsigned char * pixels = new unsigned char[width * height * size];
 
     for (int x = 0 ; x < width ; x++) {
         for (int y = 0 ; y < height ; y++) {
-            pixels[(x * height + y) * 3] = image(y, x, 0);
-            pixels[(x * height + y) * 3 + 1] = image(y, x, 1);
-            pixels[(x * height + y) * 3 + 2] = image(y, x, 2);
+            if (size >= 1) {
+                pixels[(x * height + y) * size] = image(y, x, 0, 0);
+            }
+            if (size >= 3) {
+                pixels[(x * height + y) * size + 1] = image(y, x, 0, 1);
+                pixels[(x * height + y) * size + 2] = image(y, x, 0, 2);
+            }
+            if (size >= 4) {
+                pixels[(x * height + y) * size + 3] = image(y, x, 0, 3);
+            }
         }
     }
 
-    Texture result(width, height, pixels, GL_RGB, GL_RGB);
+    GLint format = size == 3 ? GL_RGB : (size == 4 ? GL_RGBA : GL_RGBA); //TODO complèter
+    Texture result(width, height, pixels, format, format);
 
     delete[] pixels;
 

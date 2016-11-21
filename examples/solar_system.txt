@@ -1,0 +1,6 @@
+#name=solar_system;
+name=sun ; position=(0, 0, 0) ; speed= (0, 0, 0) ; texture = assets/sun.png
+name=earth ; position
+
+#name = solar_system2
+name=earth ; position= (0.1, ...)

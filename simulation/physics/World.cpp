@@ -58,7 +58,7 @@ void World::step(double seconds, int increment) {
         }
 
         //CALCUL DES NOUVELLES VARIABLES POUR TOUS LES CORPS
-        rungekutta3Bodies(sign * timeUnit);
+        euler(sign * timeUnit);
     }
 }
 

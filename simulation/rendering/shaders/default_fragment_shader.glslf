@@ -22,6 +22,7 @@ uniform struct {
     float specularIntensity;
     float specularHardness;
 
+    float alpha;
     int emit;
 } material; //Valeurs par défaut
 
@@ -91,10 +92,10 @@ void main() {
 
         //Calcul final
         vec3 gamma = vec3(1);
-        finalColor = vec4(pow(ambientIntensity + attenuation * (diffuseIntensity + specularIntensity), gamma), 1);
+        finalColor = vec4(pow(ambientIntensity + attenuation * (diffuseIntensity + specularIntensity), gamma), material.alpha);
     }
     else {
         float ratio = dot(fragToCam, normal);
-        finalColor = vec4((material.diffuseColor * ratio + material.ambientColor * (1 - ratio)) * vec3(color) * 2, 1);
+        finalColor = vec4((material.diffuseColor * ratio + material.ambientColor * (1 - ratio)) * vec3(color) * 2, material.alpha);
     }
 }

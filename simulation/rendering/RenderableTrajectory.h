@@ -18,6 +18,8 @@ RenderableTrajectory(int maxPointCount = DEFAULT_MAX_POINT_COUNT);
     void setColor(float r, float g, float b);
     void addPoint(float x, float y, float z);
 
+    virtual bool shouldRender();
+
     virtual void render(Context *context, Scene *scene);
 private :
     int maxPointCount;

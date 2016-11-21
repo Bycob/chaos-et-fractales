@@ -5,6 +5,8 @@
 #ifndef RENDUOPENGL_RENDERABLE_H
 #define RENDUOPENGL_RENDERABLE_H
 
+#include <glm/glm.hpp>
+
 #include "Material.h"
 
 class Scene;
@@ -17,6 +19,10 @@ public :
     virtual void render(Context *context, Scene *scene) = 0;
 
     void setActive(bool active) {this->active = active;}
+
+    /// @returns si false, cette unitée ne sera pas rendue lors
+    /// d'un appel à la méthode <tt>#render(...)</tt>
+    virtual bool shouldRender();
 
     bool usesBlendMode() {return _usesBlendMode;}
     void setSpecialShader(std::string specialShader) {
@@ -38,7 +44,10 @@ protected :
     ///si false, le VAO doit être réinitialisé avant le prochain dessin.
     bool compiled = false;
     GLuint gVAO = 0;
+
     GLuint vertexBuffer = 0;
+    GLuint normalBuffer = 0;
+    GLuint texCoordBuffer = 0;
 
     //---
     bool _usesBlendMode = false;
@@ -61,9 +70,6 @@ public :
         return this->material;
     }
 protected :
-    virtual void deleteBuffers();
-
-    virtual void regenerateBuffers();
 
     /** Recharge les textures et envoie les données à
      * openGL*/
@@ -74,9 +80,6 @@ protected :
     float x, y, z;
     Material material;
     std::vector<std::string> texturePaths;
-
-    GLuint normalBuffer = 0;
-    GLuint texCoordBuffer = 0;
 
     int verticesCount = 0;
 };

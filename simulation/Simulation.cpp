@@ -28,6 +28,9 @@ Simulation::Simulation(std::string name) : _name(name),
                                            _scene(std::make_unique<Scene>()),
                                            _world(std::make_unique<World>()) {
 
+    _speedIndicator = std::make_shared<SpeedIndicator>("assets/speed_indicator.png");
+
+    _scene->addObject(_speedIndicator);
 }
 
 Simulation::Simulation(std::string name, std::string loadFile) : Simulation(name) {
@@ -223,7 +226,7 @@ void Simulation::update(double time, bool printInfos) {
     _world->step(timeScale, (int) fabs(timeScale / baseStep));
 
     vec3 speed = _world->getSystemLinearMomentum();
-    printf("%.20f %.20f %.20f\n", speed.x, speed.y, speed.z);
+    //printf("%.20f %.20f %.20f\n", speed.x, speed.y, speed.z);
 
     //Mise à jour des autres composants de l'application
     for (Planet &planet : _planets) {

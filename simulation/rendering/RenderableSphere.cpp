@@ -21,7 +21,7 @@ RenderableSphere::RenderableSphere(float radius, int segmentCount, int ringCount
 }
 
 void RenderableSphere::render(Context *context, Scene *scene) {
-    if (!this->active) return;
+    if (!this->shouldRender()) return;
 
     if (!compiled) buildModelData(context);
 

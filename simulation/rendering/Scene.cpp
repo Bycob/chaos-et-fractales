@@ -34,11 +34,11 @@ void Scene::render(Context *context) {
     context->setLight(_light);
 
     //Rendu de la spheremap
-    glDepthMask(GL_FALSE);
     if (this->_sphereMap != nullptr) {
+        glDepthMask(GL_FALSE);
         this->_sphereMap->render(context, this);
+        glDepthMask(GL_TRUE);
     }
-    glDepthMask(GL_TRUE);
 
     //Rendu de tous les objets
     for (auto object : objects) {

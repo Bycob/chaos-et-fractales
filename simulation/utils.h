@@ -78,4 +78,20 @@ inline std::string trimSpaces(const std::string & item) {
     return item.substr(startIndex, endIndex);
 }
 
+inline bool startsWith(const std::string & item, const std::string & prefix) {
+    if (item.size() < prefix.size()) {
+        return false;
+    }
+
+    //C'est pas drôle
+    for (int c = 0 ; c < prefix.size() ; c++) {
+        //vous avez ri ?
+        if (item[c] != prefix[c]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 #endif // SIMULATION_UTILS_H
