@@ -58,7 +58,7 @@ void Scene::setSphereMap(std::string texturePath) {
         this->_sphereMap = nullptr;
     }
     else {
-        this->_sphereMap = std::make_unique<RenderableSphere>(5, 64, 64);
+        this->_sphereMap = std::make_unique<RenderableSphere>(5, 10, 10);
         this->_sphereMap->addTexturePath(texturePath);
         this->_sphereMap->setSpecialShader("cubemap");
     }

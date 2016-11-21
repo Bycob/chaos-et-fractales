@@ -20,21 +20,20 @@ public :
     void removeAllTextures();
     void addTexture(Texture texture);
 
+    void setAlpha(float alpha) {this->alpha = alpha;}
     void setDiffuse(float r, float g, float b);
-
     void setSpecular(float r, float g, float b);
     void setSpecularParameters(float intensity, float hardness);
-
     void setAmbient(float r, float g, float b);
 
-    void setEmit(bool emit) {
-        this->emit = emit;
-    }
+    void setEmit(bool emit) {this->emit = emit;}
 
     void pushMaterial(Context * context);
 
 private :
     std::vector<Texture> textures;
+
+    float alpha = 1.0f;
 
     float diffuseR, diffuseG, diffuseB;
     float specularR, specularG, specularB;

@@ -57,6 +57,8 @@ void Material::pushMaterial(Context * context) {
         context->program().setUniform1i("useTextures", 0);
     }
 
+    context->program().setUniform1f("material.alpha", alpha);
+
     context->program().setUniform3f("material.ambientColor", ambientR, ambientG, ambientB);
     context->program().setUniform3f("material.diffuseColor", diffuseR, diffuseG, diffuseB);
     context->program().setUniform3f("material.specularColor", specularR, specularG, specularB);

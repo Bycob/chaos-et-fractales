@@ -177,6 +177,19 @@ void Simulation::setTrajectoryVisibility(bool visible) {
     }
 }
 
+void Simulation::setShadowSimulation(bool shadow) {
+    _isShadow = shadow;
+
+    for (auto &planet : this->_planets) {
+        if (_isShadow) {
+            planet.render->getMaterial().setAlpha(SHADOW_ALPHA);
+        }
+        else {
+            planet.render->getMaterial().setAlpha(1.0f);
+        }
+    }
+}
+
 void Simulation::update(double time, bool printInfos) {
     
     //Mise à jour du monde (précision ~ 1h) t*10e6

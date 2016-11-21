@@ -9,6 +9,8 @@
 
 #include "FileBuffer.h"
 
+#define SHADOW_ALPHA 0.2f
+
 class Scene;
 class World;
 class Body;
@@ -42,6 +44,7 @@ public :
 
     void setCameraPlanet(int planet);
     void setTrajectoryVisibility(bool visible);
+    void setShadowSimulation(bool shadow);
 
     void update(double time, bool printInfos = false);
 
@@ -50,6 +53,7 @@ public :
 private :
     void parse(std::string loadedFile);
 
+    bool _isShadow = false;
     std::string _name;
     std::string _date;
 
