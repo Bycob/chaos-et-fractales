@@ -99,7 +99,7 @@ void Program::setUniformMatrix4(std::string uniformName, glm::mat4 &matrix) {
 
 void Program::setUniformMatrix3(std::string uniformName, glm::mat3 &matrix) {
     if (!isInUse()) throw std::runtime_error("This program is not in use.");
-    glUniformMatrix4fv(uniform(uniformName), 1, GL_FALSE, glm::value_ptr(matrix));
+    glUniformMatrix3fv(uniform(uniformName), 1, GL_FALSE, glm::value_ptr(matrix));
 }
 
 void Program::setUniform3f(std::string uniformName, const GLfloat &x, const GLfloat &y, const GLfloat &z) {

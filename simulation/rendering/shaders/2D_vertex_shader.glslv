@@ -3,8 +3,8 @@
 uniform mat3 model;
 
 uniform struct {
-    float width;
-    float height;
+    int width;
+    int height;
 } screen;
 
 in vec2 vert;
@@ -18,8 +18,10 @@ void main() {
     fragVert = vert;
     fragTexCoord = texCoord;
 
-    //vec2 position = vec2(model * vec3(vert, 1));
+    vec2 position = vec2(model * vec3(vert, 1));
 
     //Application des modifications de position.
-    gl_Position = vec4(vert.x / screen.width * 2 - 1, vert.y / screen.height * 2 - 1, 999, 1);
+    float w = screen.width;
+    float h = screen.height;
+    gl_Position = vec4(position.x / w * 2.0 - 1, - position.y / h * 2.0 + 1, -1, 1);
 }

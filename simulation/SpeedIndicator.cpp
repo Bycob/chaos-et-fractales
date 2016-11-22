@@ -2,6 +2,8 @@
 // Created by louis on 21/11/16.
 //
 
+#include <iostream>
+
 #include "SpeedIndicator.h"
 
 SpeedIndicator::SpeedIndicator(const std::string & texture) :
@@ -19,7 +21,6 @@ void SpeedIndicator::setSignum(int signum) {
 
 void SpeedIndicator::render(Context *context, Scene *scene) {
     //L'indicateur est en haut à gauche de l'écran.
-
     for (int i = 0 ; i < speed ; i++) {
         sprite.drawAt(context, OFFSET_LEFT + i * INDICATOR_WIDTH, OFFSET_TOP);
     }
