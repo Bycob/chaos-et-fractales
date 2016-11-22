@@ -5,6 +5,7 @@
 #ifndef RENDUOPENGL_SPEEDINDICATOR_H
 #define RENDUOPENGL_SPEEDINDICATOR_H
 
+#include "utils.h"
 #include "rendering/Renderable.h"
 #include "rendering/Sprite.h"
 

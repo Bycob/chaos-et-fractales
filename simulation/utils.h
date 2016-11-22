@@ -9,11 +9,13 @@
 #include <chrono>
 #include <fstream>
 #include <sstream>
+#include <vector>
 #include <glm/glm.hpp>
 #include <sys/stat.h>
 
 #ifdef _WIN32
 #include <direct.h>
+typedef unsigned char uint;
 #endif
 
 inline void createDirectory(std::string directory) {
