@@ -12,6 +12,12 @@
 
 #define SHADOW_ALPHA 0.2f
 
+#define DEFAULT_PHYSICAL_STEP 0.0001
+#define BASE_TIME_SCALE 0.1
+#define COMMON_RATIO 3.1622776601683795227870632515987381339073 //sqrt(10)
+#define MAX_MULTIPLIER 10
+#define MIN_MULTIPLIER 0
+
 class Scene;
 class World;
 class Body;
@@ -48,10 +54,22 @@ public :
     void setPlanetVisibility(bool visible);
     void setShadowSimulation(bool shadow);
 
+    void setTimeMultiplier(int multiplier);
+    void incrementTimeMultiplier();
+    void decrementTimeMultiplier();
+    int getTimeMultiplier() {
+        return _timeMultiplier;
+    }
     void setPaused(bool paused);
     void togglePaused();
+    bool isPaused() {
+        return _pause;
+    }
     void setReverse(bool reverse);
     void toggleReverse();
+    bool isReverse() {
+        return _reverse;
+    }
     void update(double time, bool printInfos = false);
 
     void writeFiles();
@@ -75,11 +93,14 @@ private :
     /// Indique si le temps de la simulation s'écoule à l'envers
     bool _reverse = false;
 
+    /// Le multiplieur de temps, incrémentable ou décrémentable
+    /// _timeScale = BASE_TIME_SCALE * COMMON_RATIO ^ _timeMultiplier
+    int _timeMultiplier;
     /// L'échelle de temps, càd combien de temps passe dans la simulation (en 1e6 s)
     /// lorsqu'il s'écoule 1 seconde.
-    double _timeScale = 2;
+    double _timeScale;
     /// Le pas de discrétisation physique de la simulation.
-    double _physicalStep = 0.0001;
+    double _physicalStep = DEFAULT_PHYSICAL_STEP;
 
     /// La scène qui contient les objets à afficher (planètes, trajectoires...)
     std::unique_ptr<Scene> _scene = nullptr;

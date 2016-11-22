@@ -110,7 +110,7 @@ bool _______IMPLEMENTATIONS__________________________________;
  * -s [secondes] choisir le pas physique de la simulation */
 
 int main(int argc, char** argv) {
-    //printf("nombre : %.80Lf\n", M_PIl); //;)
+    //printf("nombre : %.80f\n", sqrt(10.0)); //;)
     srand(time(NULL));
 
     //TODO déterminer la date
@@ -414,6 +414,13 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
         }
         else if (key == GLFW_KEY_B) {
             runtime::simulation->setReverse(true);
+        }
+        //contrôleur de temps
+        else if (key == GLFW_KEY_KP_ADD) {
+            runtime::simulation->incrementTimeMultiplier();
+        }
+        else if (key == GLFW_KEY_KP_SUBTRACT) {
+            runtime::simulation->decrementTimeMultiplier();
         }
     }
 }

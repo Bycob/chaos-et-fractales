@@ -8,10 +8,10 @@
 #include "rendering/Renderable.h"
 #include "rendering/Sprite.h"
 
-#define INDICATOR_WIDTH 30
-#define INDICATOR_HEIGHT 30
-#define OFFSET_LEFT 30
-#define OFFSET_TOP 30
+#define INDICATOR_WIDTH 20
+#define INDICATOR_HEIGHT 20
+#define OFFSET_LEFT 25
+#define OFFSET_TOP 25
 
 class SpeedIndicator : public Renderable {
 public :

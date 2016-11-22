@@ -29,6 +29,7 @@ Simulation::Simulation(std::string name) : _name(name),
                                            _world(std::make_unique<World>()) {
 
     _speedIndicator = std::make_shared<SpeedIndicator>("assets/speed_indicator.png");
+    setTimeMultiplier(2);
 
     _scene->addObject(_speedIndicator);
 }
@@ -199,6 +200,26 @@ void Simulation::setShadowSimulation(bool shadow) {
             planet.render->getMaterial().setAlpha(1.0f);
         }
     }
+}
+
+void Simulation::setTimeMultiplier(int multiplier) {
+    if (multiplier > MAX_MULTIPLIER) multiplier = MAX_MULTIPLIER;
+    if (multiplier < MIN_MULTIPLIER) multiplier = MIN_MULTIPLIER;
+
+    if (multiplier == _timeMultiplier) return;
+
+    _timeMultiplier = multiplier;
+
+    _speedIndicator->setSpeed((uint) _timeMultiplier);
+    _timeScale = BASE_TIME_SCALE * pow(COMMON_RATIO, _timeMultiplier);
+}
+
+void Simulation::incrementTimeMultiplier() {
+    setTimeMultiplier(_timeMultiplier + 1);
+}
+
+void Simulation::decrementTimeMultiplier() {
+    setTimeMultiplier(_timeMultiplier - 1);
 }
 
 void Simulation::setPaused(bool paused) {
