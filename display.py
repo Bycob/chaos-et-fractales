@@ -80,8 +80,8 @@ if __name__ == '__main__' :
 		plot_from_file('sun_', 'b')
 		plot_from_file('jupiter_', 'b')
 		"""
-		plot_from_file('body1_', 'g')
-		plot_from_file('body2_', 'b')
-		plot_from_file('body3_', 'r')
+		plot_from_file('files/body1', 'g')
+		plot_from_file('files/body2', 'b')
+		plot_from_file('files/body3', 'r')
 
 		plt.show()
