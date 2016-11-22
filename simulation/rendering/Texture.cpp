@@ -2,39 +2,36 @@
 // Created by louis on 27/10/16.
 //
 
-#include <CImg/CImg.h>
+#include <opencv2/opencv.hpp>
 
 #include "Texture.h"
 
-Texture Texture::load(std::string path) {
+Texture Texture::load(const std::string & path) {
 
     //TODO Gérer le cas où on arrive pas à trouver l'image.
 
-    cimg_library::CImg<unsigned char> image = cimg_library::CImg<>(path.c_str()).normalize(0, 255);
-    int width = image.width();
-    int height = image.height();
-    int size = image.spectrum();
-    unsigned char * pixels = new unsigned char[width * height * size];
+    cv::Mat imageBGR;
+    imageBGR = cv::imread(path, 1);
 
-    for (int x = 0 ; x < width ; x++) {
-        for (int y = 0 ; y < height ; y++) {
-            if (size >= 1) {
-                pixels[(x * height + y) * size] = image(y, x, 0, 0);
-            }
-            if (size >= 3) {
-                pixels[(x * height + y) * size + 1] = image(y, x, 0, 1);
-                pixels[(x * height + y) * size + 2] = image(y, x, 0, 2);
-            }
-            if (size >= 4) {
-                pixels[(x * height + y) * size + 3] = image(y, x, 0, 3);
-            }
-        }
+    if (!imageBGR.data) {
+        throw std::runtime_error("image not found : " + path);
     }
 
-    GLint format = size == 3 ? GL_RGB : (size == 4 ? GL_RGBA : GL_RGBA); //TODO complèter
-    Texture result(width, height, pixels, format, format);
+    int width = imageBGR.cols;
+    int height = imageBGR.rows;
+    int size = imageBGR.channels();
 
-    delete[] pixels;
+    if (size == 3) {
+        cv::cvtColor(imageBGR, imageBGR, CV_BGR2RGB);
+    }
+    else if (size == 4) {
+        cv::cvtColor(imageBGR, imageBGR, CV_BGRA2RGBA);
+    }
+
+    auto data = imageBGR.data;
+
+    GLint internalFormat = size == 3 ? GL_RGB : (size == 4 ? GL_RGBA : 0); //TODO complèter
+    Texture result(width, height, data, internalFormat, internalFormat);
 
     return result;
 }

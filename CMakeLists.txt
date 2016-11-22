@@ -20,15 +20,12 @@ file(GLOB_RECURSE
         ${CMAKE_CURRENT_SOURCE_DIR}/glad/*.c)
 
 find_package(glfw3 3.2 REQUIRED)
+find_package(OpenCV REQUIRED)
 
 # Target principale
 
 add_executable(simulation ${SIMULATION_SOURCES} ${GLAD_SOURCES})
-if (WIN32)
-	target_link_libraries(simulation glfw pthread)
-else()
-	target_link_libraries(simulation glfw X11 pthread)
-endif()
+target_link_libraries(simulation glfw ${OpenCV_LIBS})
 
 add_custom_command(TARGET simulation PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory

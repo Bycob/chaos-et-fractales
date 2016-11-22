@@ -13,7 +13,7 @@ class Texture {
 
 public :
 
-    static Texture load(std::string path);
+    static Texture load(const std::string & path);
 
     Texture(int width, int height, const unsigned char* pixel,
             GLint internalFormat = GL_RGBA, GLenum format = GL_RGBA);
