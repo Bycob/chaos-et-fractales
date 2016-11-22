@@ -12,8 +12,8 @@ Dépendances
 -----------
 Pour pouvoir compiler le projet, il est nécessaire d'installer les librairies
 suivantes :
-    - GLFW (http://www.glfw.org/download.html)
-    - OpenCV (http://opencv.org/downloads.html)
+* GLFW (http://www.glfw.org/download.html)
+* OpenCV (http://opencv.org/downloads.html)
 
 Pour installer les librairies ci-dessus, se réferer à la documentation respective
 de chacune d'elles.
