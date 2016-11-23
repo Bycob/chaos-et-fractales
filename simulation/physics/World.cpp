@@ -12,6 +12,10 @@ World::World() : time(0) {
 
 }
 
+void World::setMethod(const Method &method) {
+    this->method = method;
+}
+
 void World::addObject(std::shared_ptr<Body> body) {
     this->bodies.push_back(body);
 }
@@ -58,7 +62,14 @@ void World::step(double seconds, int increment) {
         }
 
         //CALCUL DES NOUVELLES VARIABLES POUR TOUS LES CORPS
-        euler(sign * timeUnit);
+        switch (method) {
+        case Method::EULER :
+            euler(sign * timeUnit);
+            break;
+        case Method::RUNGE_KUTTA :
+            rungekutta3Bodies(sign * timeUnit);
+            break;
+        }
     }
 }
 

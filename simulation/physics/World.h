@@ -16,6 +16,11 @@ class Body;
 typedef glm::tvec3<double, glm::highp> vec3d;
 typedef glm::tmat3x4<double, glm::highp> mat3x4d;
 
+enum class Method {
+    EULER,
+    RUNGE_KUTTA
+};
+
 class World {
 
 public :
@@ -23,6 +28,7 @@ public :
 
     virtual ~World() {};
 
+    void setMethod(const Method & method);
     void addObject(std::shared_ptr<Body> body);
 
     void setGravityConstant(double g) { this->G = g;}
@@ -35,9 +41,13 @@ public :
     ///Effectue la simulation sur le nombre de secondes passées en paramètre.
     void step(double seconds, int increment = 1);
 private :
+    //Différentes méthodes de calcul
     void euler(double t);
+
     mat3x4d rungekuttaFunc3Bodies(mat3x4d & in);
     void rungekutta3Bodies(double t);
+
+
 
     std::vector<std::shared_ptr<Body>> bodies;
 
@@ -46,6 +56,8 @@ private :
 
     /// Ce champ comptabilise le temps écoulé depuis la naissance du monde.
     double time;
+
+    Method method = Method::EULER;
 };
 
 

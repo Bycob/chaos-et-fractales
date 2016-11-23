@@ -40,6 +40,7 @@ public :
     Simulation(std::string name);
     Simulation(std::string name, std::string loadFile);
 
+    std::string getFilename() {return _filename;}
     void set3BodiesSpecial();
 
     Scene & scene() {return *this->_scene;}
@@ -49,10 +50,17 @@ public :
     Planet & getPlanet(int index);
     int getPlanetCount() {return (int) _planets.size();}
 
+
+    //Contrôles du rendu
+
     void setCameraPlanet(int planet);
     void setTrajectoryVisibility(bool visible);
+    void resetTrajectories();
     void setPlanetVisibility(bool visible);
     void setShadowSimulation(bool shadow);
+
+
+    //Contrôle de l'execution
 
     void setTimeMultiplier(int multiplier);
     void incrementTimeMultiplier();
@@ -77,10 +85,17 @@ public :
 private :
     void parse(std::string loadedFile);
 
-    bool _isShadow = false;
+    /// Si la simulation a été créée à partir d'un fichier, contient
+    /// le nom de ce fichier.
+    std::string _filename;
+
     std::string _name;
     std::string _date;
 
+    /// Indique si cette simulation est en <i>shadow-mode</i>, c'est à dire
+    /// que les planètes sont transparente pour pouvoir comparer avec une même
+    /// simulation au même endroit.
+    bool _isShadow = false;
     /// Indique, dans la simulation, quelle est la planète sur laquelle est
     /// centrée la vue actuellement. Si vaut -1, alors la vue est centrée sur
     /// 0, 0

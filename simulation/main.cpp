@@ -71,10 +71,11 @@ namespace parameters {
 
 
 
-/** Initialise la scène ainsi que le monde physique. */
+/** Initialise la scène ainsi que le monde physique.
+ * Cette méthode peut aussi servir à réinitialiser la
+ * scène et le monde physique.*/
 void createScene();
-/** J'ajoute le système solaire à la scène ! */
-void addSolarSystem();
+/// Le monde par défaut
 void addMooreSystem();
 
 
@@ -173,65 +174,13 @@ void createScene() {
     runtime::simulation->scene().setSphereMap("assets/galaxy.png");
 }
 
-void addSolarSystem() {
-    //Constantes
-    Light light(LIGHT_POINT, 0, 0, 0);
-    runtime::simulation->scene().setLight(light);
-
-    //dist 1e10 m, mass 1e21 kg, tps 1e6 s, vit 1e4 m.s-1 -> G *= 1e3 (- 10*3 + 21 + 6*2)
-    runtime::simulation->world().setGravityConstant(GRAVITY_CONSTANT * 1e3);
-
-    //Rendus
-    auto moonRender = std::make_shared<RenderableSphere>(0.8, 64, 64);
-    moonRender->addTexturePath("assets/moon.png");
-
-    auto earthRender = std::make_shared<RenderableSphere>(0.8, 64, 64);
-    earthRender->addTexturePath("assets/earth.png");
-
-    auto jupiterRender = std::make_shared<RenderableSphere>(1.5, 64, 64);
-    jupiterRender->addTexturePath("assets/jupiter.png");
-
-    auto marsRender = std::make_shared<RenderableSphere>(0.7, 64, 64);
-    marsRender->addTexturePath("assets/mars.png");
-
-    auto sunRender = std::make_shared<RenderableSphere>(3, 64, 64);
-    sunRender->getMaterial().setAmbient(0.85f, 0.25f, 0.1f);
-    sunRender->addTexturePath("assets/sun.png");
-    sunRender->getMaterial().setEmit(true);
-
-    //Physique
-    auto moonBody = std::make_shared<Body>(73.0);
-    moonBody->setPosition(-20.0, 0, 0);
-    moonBody->setSpeed(0, 5e-6, 0);
-
-    auto earthBody = std::make_shared<Body>(6000.0);
-    earthBody->setPosition(-15, 0, 0);
-    earthBody->setSpeed(0, -2.9, 0);
-
-    auto marsBody = std::make_shared<Body>(600.0);
-    marsBody->setPosition(0, -24.9, 0);
-    marsBody->setSpeed(2.19, 0, 0);
-
-    auto jupiterBody = std::make_shared<Body>(1.9e6);
-    jupiterBody->setPosition(0, 77.8, 0);
-    jupiterBody->setSpeed(-1.3, 0, 0);
-
-    auto sunBody = std::make_shared<Body>(2e9);
-
-    //Ajout des objets
-    runtime::simulation->addPlanet({"sun", sunBody, sunRender});
-    runtime::simulation->addPlanet({"earth", earthBody, earthRender});
-    //runtime::simulation->addPlanet({"moon", moonBody, moonRender});
-    runtime::simulation->addPlanet({"mars", marsBody, marsRender});
-    runtime::simulation->addPlanet({"jupiter", jupiterBody, jupiterRender});
-}
-
 void addMooreSystem() {
     //Constantes
     Light light(LIGHT_SUN, 1, 1, 1);
     runtime::simulation->scene().setLight(light);
 
     runtime::simulation->world().setGravityConstant(GRAVITY_CONSTANT);
+    runtime::simulation->world().setMethod(Method::RUNGE_KUTTA);
 
     //Rendus
     auto body1Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
@@ -403,6 +352,7 @@ void input(GLFWwindow * window) {
 void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 
     if (action == GLFW_PRESS) {
+        // Vue de dessus
         if (key == GLFW_KEY_KP_0) {
             runtime::currentPlanet = -1;
 
@@ -412,6 +362,7 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
             traveling->setDuration(0.5f);
             runtime::simulation->scene().camera().traveling(traveling);
         }
+        // Vue planètes
         else if (key >= GLFW_KEY_KP_1 && key <= GLFW_KEY_KP_9){
             int targetPlanet = key - GLFW_KEY_KP_1;
 
@@ -421,13 +372,18 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
             }
         }
         // Toggle trajectoires
-        else if (key == GLFW_KEY_T) {
+        else if (key == GLFW_KEY_T && mods == 0) {
             runtime::enableTrajectory = ! runtime::enableTrajectory;
             runtime::simulation->setTrajectoryVisibility(runtime::enableTrajectory);
         }
+        // Toggle planets
         else if (key == GLFW_KEY_P) {
             runtime::displayPlanets = ! runtime::displayPlanets;
             runtime::simulation->setPlanetVisibility(runtime::displayPlanets);
+        }
+        // Reset trajectory
+        else if (key == GLFW_KEY_T && (mods & GLFW_MOD_CONTROL) != 0) {
+            runtime::simulation->resetTrajectories();
         }
         // Pause / Lancement
         else if (key == GLFW_KEY_SPACE) {
@@ -446,6 +402,10 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
         }
         else if (key == GLFW_KEY_KP_SUBTRACT) {
             runtime::simulation->decrementTimeMultiplier();
+        }
+        // Reload file
+        else if (key == GLFW_KEY_ENTER && (mods & (GLFW_MOD_CONTROL + GLFW_MOD_SHIFT)) != 0) {
+            createScene();
         }
     }
 }

@@ -27,6 +27,12 @@ void RenderableTrajectory::addPoint(float x, float y, float z) {
     this->pointsUpdated = false;
 }
 
+void RenderableTrajectory::reset() {
+    points.clear();
+
+    this->pointsUpdated = false;
+}
+
 bool RenderableTrajectory::shouldRender() {
     return Renderable::shouldRender() && this->points.size() != 0;
 }

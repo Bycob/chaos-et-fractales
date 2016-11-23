@@ -22,6 +22,8 @@ public :
 
     GLuint getID() {return this->id;}
 private :
+    static std::map<std::string, GLuint> pathToIDMap; //TODO next thing todo
+
     GLuint id = 0;
     std::shared_ptr<int> instance_count;
 };

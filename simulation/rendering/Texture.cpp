@@ -8,8 +8,6 @@
 
 Texture Texture::load(const std::string & path) {
 
-    //TODO Gérer le cas où on arrive pas à trouver l'image.
-
     cv::Mat imageBGR;
     imageBGR = cv::imread(path, 1);
 

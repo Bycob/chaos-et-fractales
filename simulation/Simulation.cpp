@@ -55,20 +55,14 @@ Simulation::Simulation(std::string name) : _name(name),
 }
 
 Simulation::Simulation(std::string name, std::string loadFile) : Simulation(name) {
-
-    std::ifstream file(loadFile);
-    std::string contents = "";
-    std::string line;
-
-    if (file.is_open()) {
-        while (getline(file, line)) {
-            contents += line + "\n";
-        }
-        file.close();
+    std::string contents;
+    try {
+        contents = readText(loadFile);
     }
-    else {
-        throw std::runtime_error("simulation file not found : " + loadFile);
+    catch (std::runtime_error & e) {
+        throw std::runtime_error("Simulation file not found : " + loadFile);
     }
+    _filename = loadFile;
 
     parse(contents);
 }
@@ -80,7 +74,10 @@ void Simulation::parse(std::string loadedFile) {
 
     for (auto &line : lines) {
         //Parametres généraux
-        if (line.size() > 0 && line.at(0) == '#') {
+        if (startsWith(line, "//")) {
+            //Do nothing, it's comment
+        }
+        else if (line.size() > 0 && line.at(0) == '#') {
             //On ne prend en compte la ligne que si c'est la première du fichier
             if (parsingStarted) {
                 return;
@@ -106,6 +103,18 @@ void Simulation::parse(std::string loadedFile) {
                             continue;
                         }
                         _name = value;
+                    }
+                    else if (key == "method") {
+                        if (value == "RUNGE_KUTTA") {
+                            _world->setMethod(Method::RUNGE_KUTTA);
+                        }
+                        else if (value == "EULER") {
+                            _world->setMethod(Method::EULER);
+                        }
+                        else {
+                            std::cerr << "Unknown method : " << value << std::endl;
+                            std::cerr << "\tAvailable methods : EULER, RUNGE_KUTTA" << std::endl;
+                        }
                     }
                     //Constante de gravitation
                     else if (key == "G") {
@@ -133,6 +142,10 @@ void Simulation::parse(std::string loadedFile) {
                         }
                         else if (value == "SUN") {
                             light.setLightType(LIGHT_SUN);
+                        }
+                        else {
+                            std::cerr << "Unknown light type : " << value << std::endl;
+                            std::cerr << "\tAvailable types : POINT, SUN." << std::endl;
                         }
                     }
                     else if (key == "light.pos") {
@@ -287,6 +300,14 @@ void Simulation::setTrajectoryVisibility(bool visible) {
     for (Planet &planet : _planets) {
         if (planet.trajectory != nullptr) {
             planet.trajectory->setActive(visible);
+        }
+    }
+}
+
+void Simulation::resetTrajectories() {
+    for (Planet &planet : _planets) {
+        if (planet.trajectory != nullptr) {
+            planet.trajectory->reset();
         }
     }
 }

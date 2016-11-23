@@ -26,6 +26,24 @@ inline void createDirectory(std::string directory) {
 #endif
 }
 
+inline std::string readText(const std::string & filename) {
+    std::ifstream file(filename);
+    std::string contents = "";
+    std::string line;
+
+    if (file.is_open()) {
+        while (getline(file, line)) {
+            contents += line + "\n";
+        }
+        file.close();
+    }
+    else {
+        throw std::runtime_error("File not found : " + filename);
+    }
+
+    return contents;
+}
+
 inline void sleep(float ms) {
     std::this_thread::sleep_for(std::chrono::microseconds((int) (ms * 1000)));
 }
