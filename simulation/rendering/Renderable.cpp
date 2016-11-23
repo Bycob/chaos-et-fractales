@@ -96,8 +96,13 @@ void RenderableModel::addTexturePath(std::string path) {
 void RenderableModel::loadTextures() {
     this->material.removeAllTextures();
 
-    for (std::string & path : this->texturePaths) {
-        this->material.addTexture(Texture::load(path));
+    for (const std::string & path : this->texturePaths) {
+        try {
+            this->material.addTexture(Texture::load(path));
+        }
+        catch (std::runtime_error & e) {
+            std::cerr << "Texture non chargée : " << path << std::endl;
+        }
     }
 }
 

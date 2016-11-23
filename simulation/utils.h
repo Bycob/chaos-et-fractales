@@ -75,7 +75,7 @@ inline std::string trimSpaces(const std::string & item) {
             break;
         }
     }
-    return item.substr(startIndex, endIndex);
+    return item.substr(startIndex, endIndex - startIndex);
 }
 
 inline bool startsWith(const std::string & item, const std::string & prefix) {

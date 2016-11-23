@@ -63,6 +63,8 @@ namespace parameters {
      * un fichier à la fin.*/
     bool enableRender = true;
 
+    std::vector<std::string> filenames;
+
     int fps = 50;
 }
 
@@ -124,6 +126,13 @@ int main(int argc, char** argv) {
         else if (strcmp(argv[i], "norender") == 0) {
             parameters::enableRender = false;
         }
+        else if (strcmp(argv[i], "-f") == 0) {
+            if (i + 1 != argc) {
+                std::string arg(argv[i + 1]);
+                parameters::filenames.push_back(arg);
+                //TODO split
+            }
+        }
     }
 
     createScene();
@@ -139,9 +148,25 @@ int main(int argc, char** argv) {
 
 
 void createScene() {
-    runtime::simulation = std::make_unique<Simulation>("files");
-    addSolarSystem();
+    // On essaie avec les noms de fichiers
+    bool fileParsed = false;
+    if (parameters::filenames.size() != 0) {
+        try {
+            runtime::simulation = std::make_unique<Simulation>("files", parameters::filenames[0]);
+            fileParsed = true;
+        }
+        catch (std::runtime_error & e) {
+            std::cerr << e.what() << std::endl;
+        }
+    }
 
+    //Si on peut pas on met le système de Moore par défaut.
+    if (!fileParsed) {
+        runtime::simulation = std::make_unique<Simulation>("files");
+        addMooreSystem();
+    }
+
+    //Réglages génériques
     runtime::simulation->setTrajectoryVisibility(runtime::enableTrajectory);
     runtime::simulation->setPlanetVisibility(runtime::displayPlanets);
 
@@ -181,7 +206,7 @@ void addSolarSystem() {
 
     auto earthBody = std::make_shared<Body>(6000.0);
     earthBody->setPosition(-15, 0, 0);
-    earthBody->setSpeed(0, 2.9, 0);
+    earthBody->setSpeed(0, -2.9, 0);
 
     auto marsBody = std::make_shared<Body>(600.0);
     marsBody->setPosition(0, -24.9, 0);

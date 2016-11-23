@@ -13,6 +13,16 @@ Light::Light(LightType type, float x, float y, float z) :
 
 }
 
+void Light::setLightPosition(float x, float y, float z) {
+    this->x = x;
+    this->y = y;
+    this->z = z;
+}
+
+void Light::setLightType(const LightType &type) {
+    this->type = type;
+}
+
 void Light::pushLight(Context *context) {
 
     context->program().setUniform1i("light.type", (int) this->type);

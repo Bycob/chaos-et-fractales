@@ -27,6 +27,7 @@ find_package(OpenCV REQUIRED)
 add_executable(simulation ${SIMULATION_SOURCES} ${GLAD_SOURCES})
 target_link_libraries(simulation glfw ${OpenCV_LIBS})
 
+#copie des dossiers
 add_custom_command(TARGET simulation PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/simulation/rendering/shaders $<TARGET_FILE_DIR:simulation>/shaders)
@@ -34,3 +35,7 @@ add_custom_command(TARGET simulation PRE_BUILD
 add_custom_command(TARGET simulation PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_SOURCE_DIR}/assets/ $<TARGET_FILE_DIR:simulation>/assets/)
+
+add_custom_command(TARGET simulation PRE_BUILD
+		COMMAND ${CMAKE_COMMAND} -E copy_directory
+		${CMAKE_SOURCE_DIR}/examples/ $<TARGET_FILE_DIR:simulation>/examples/)

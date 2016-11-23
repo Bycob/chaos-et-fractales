@@ -16,6 +16,9 @@ class Light {
 public :
     Light(LightType type = LIGHT_POINT, float x = 0, float y = 0, float z = 0);
 
+    void setLightType(const LightType &type);
+    void setLightPosition(float x, float y, float z);
+
     void pushLight(Context *context);
 private :
     LightType type;

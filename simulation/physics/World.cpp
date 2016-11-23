@@ -16,22 +16,22 @@ void World::addObject(std::shared_ptr<Body> body) {
     this->bodies.push_back(body);
 }
 
-vec3 World::getSystemLinearMomentum() {
-    vec3 result(0.0, 0.0, 0.0);
+vec3d World::getSystemLinearMomentum() {
+    vec3d result(0.0, 0.0, 0.0);
 
     for (auto &body : bodies) {
-        vec3 speed(body->vx, body->vy, body->vz);
+        vec3d speed(body->vx, body->vy, body->vz);
         result += speed * body->mass;
     }
 
     return result;
 }
 
-vec3 World::getSystemPosition() {
-    vec3 result(0.0, 0.0, 0.0);
+vec3d World::getSystemPosition() {
+    vec3d result(0.0, 0.0, 0.0);
 
     for (auto &body : bodies) {
-        vec3 position(body->x, body->y, body->z);
+        vec3d position(body->x, body->y, body->z);
         result += position;
     }
 
@@ -93,8 +93,8 @@ void World::euler(double t) {
 }
 
 
-mat3x4 World::rungekuttaFunc3Bodies(mat3x4 & in) {
-    mat3x4 out(
+mat3x4d World::rungekuttaFunc3Bodies(mat3x4d & in) {
+    mat3x4d out(
             in[0][2], in[0][3], 0, 0,
             in[1][2], in[1][3], 0, 0,
             in[2][2], in[2][3], 0, 0
@@ -118,7 +118,7 @@ mat3x4 World::rungekuttaFunc3Bodies(mat3x4 & in) {
 void World::rungekutta3Bodies(double t) {
     if (bodies.size() != 3) return;
 
-    mat3x4 M(bodies[0]->x, bodies[0]->y, bodies[0]->vx, bodies[0]->vy,
+    mat3x4d M(bodies[0]->x, bodies[0]->y, bodies[0]->vx, bodies[0]->vy,
                   bodies[1]->x, bodies[1]->y, bodies[1]->vx, bodies[1]->vy,
                   bodies[2]->x, bodies[2]->y, bodies[2]->vx, bodies[2]->vy);
 

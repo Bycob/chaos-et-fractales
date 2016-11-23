@@ -15,6 +15,26 @@
 #include "rendering/RenderableSphere.h"
 #include "rendering/RenderableTrajectory.h"
 
+//Fonctions de parsing
+void parseFloatVec3(const std::string & str, glm::vec3 & result, const std::string & key = "") {
+    int match = sscanf(str.c_str(), "(%f, %f, %f)", &result.x, &result.y, &result.z);
+    if (match != 3) {
+        std::cerr << "Impossible de lire le triplet " << key << std::endl;
+        result.x = result.y = result.z = 0;
+    }
+}
+
+void parseDoubleVec3(const std::string &str, vec3d & result, const std::string & key = "") {
+    int match = sscanf(str.c_str(), "(%lf, %lf, %lf)", &result.x, &result.y, &result.z);
+    if (match != 3) {
+        std::cerr << "Impossible de lire le triplet " << key << std::endl;
+        result.x = result.y = result.z = 0;
+    }
+}
+
+
+
+
 Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render)
         : name(name), body(body), render(render), buffer(std::make_shared<FileBuffer>("")),
           trajectory(std::make_shared<RenderableTrajectory>()) {
@@ -69,6 +89,9 @@ void Simulation::parse(std::string loadedFile) {
                 std::string paramsLine = line.substr(1);
                 std::vector<std::string> params = split(paramsLine, ';', true);
 
+                //Déclaration des variables utiles
+                Light light;
+
                 //Analyse de chaque paramètre
                 for (std::string &param : params) {
                     std::vector<std::string> keyvalue = split(param, '=', true);
@@ -79,10 +102,42 @@ void Simulation::parse(std::string loadedFile) {
 
                     //Paramètrage de la scène en fonction du couple key, value
                     if (key == "name") {
-                        //TODO vérifier le nom valide
+                        if (value.size() != 0 || value.find(' ') != -1) {
+                            continue;
+                        }
                         _name = value;
-                    } else if (key == "") {
-
+                    }
+                    //Constante de gravitation
+                    else if (key == "G") {
+                        try {
+                            double G = std::stod(value);
+                            _world->setGravityConstant(G);
+                        }
+                        catch (std::invalid_argument & e) {
+                            std::cerr << "Can't read parameter : G for the current scene." << std::endl;
+                        }
+                    }
+                    //facteur de la constante de gravitation
+                    else if (key == "Gfactor") {
+                        try {
+                            double Gfactor = std::stod(value);
+                            _world->setGravityConstant(GRAVITY_CONSTANT * Gfactor);
+                        }
+                        catch (std::invalid_argument & e) {
+                            std::cerr << "Can't read parameter : G for the current scene." << std::endl;
+                        }
+                    }
+                    else if (key == "light.type") {
+                        if (value == "POINT") {
+                            light.setLightType(LIGHT_POINT);
+                        }
+                        else if (value == "SUN") {
+                            light.setLightType(LIGHT_SUN);
+                        }
+                    }
+                    else if (key == "light.pos") {
+                        glm::vec3 lightPos;
+                        parseFloatVec3(value, lightPos, "light.pos");
                     }
                 }
             }
@@ -92,7 +147,14 @@ void Simulation::parse(std::string loadedFile) {
             std::vector<std::string> params = split(line, ';', true);
 
             std::string name = "";
-
+            double mass = 1e13;
+            vec3d position;
+            vec3d speed;
+            float radius = 1;
+            std::string texture = "";
+            glm::vec3 ambient(0.2, 0.2, 0.2);
+            glm::vec3 diffuse(1, 1, 1);
+            bool emit = false;
 
             for (std::string &param : params) {
                 std::vector<std::string> keyvalue = split(param, '=', true);
@@ -103,19 +165,67 @@ void Simulation::parse(std::string loadedFile) {
 
                 //Analyse de chaque paire clé / valeur.
                 if (key == "name") {
-                    //TODO vérifier la conformiter du nom
+                    if (value.size() == 0 || value.find(' ') != -1) {
+                        std::cout << "Invalid name : " << value << std::endl;
+                        continue;
+                    }
                     name = value;
                 }
+                else if (key == "mass") {
+                    try {
+                        mass = std::stod(value);
+                    }
+                    catch (std::invalid_argument & e) {
+                        std::cerr << "could not read parameter : mass, for planet : " << name << std::endl;
+                    }
+                }
                 else if (key == "position") {
-
+                    parseDoubleVec3(value, position, "position");
+                }
+                else if (key == "speed") {
+                    parseDoubleVec3(value, speed, "speed");
+                }
+                else if (key == "radius") {
+                    try {
+                        radius = std::stof(value);
+                    }
+                    catch (std::invalid_argument & e) {
+                        std::cerr << "could not read parameter : radius, for planet : " << name << std::endl;
+                    }
+                }
+                else if (key == "texture") {
+                    if (value == "") {
+                        std::cerr << "could not read parameter : texture, for planet : " << name << std::endl;
+                    }
+                    texture = value;
+                }
+                else if (key == "ambient") {
+                    parseFloatVec3(value, ambient, "ambient");
+                }
+                else if (key == "specular") {
+                    parseFloatVec3(value, diffuse, "diffuse");
+                }
+                else if (key == "emit") {
+                    emit = value == "true" || value == "1";
                 }
             }
 
             if (name != "") {
                 parsingStarted = true;
 
-                auto body = std::make_shared<Body>(5);
-                auto render = std::make_shared<RenderableSphere>(1, 64, 64);
+                //Création du body
+                auto body = std::make_shared<Body>(mass);
+                body->setPosition(position.x, position.y, position.z);
+                body->setSpeed(speed.x, speed.y, speed.z);
+
+                //Création du rendu
+                auto render = std::make_shared<RenderableSphere>(radius, 64, 64);
+                if (texture != "") render->addTexturePath(texture);
+                render->getMaterial().setEmit(emit);
+                render->getMaterial().setAmbient(ambient.r, ambient.g, ambient.b);
+                render->getMaterial().setDiffuse(diffuse.r, diffuse.g, diffuse.b);
+
+                //Paramétrage de la planète
                 Planet toAdd(name, body, render);
 
                 addPlanet(toAdd);
@@ -246,7 +356,7 @@ void Simulation::update(double time, bool printInfos) {
     const double baseStep = _physicalStep;
     _world->step(timeScale, (int) fabs(timeScale / baseStep));
 
-    vec3 speed = _world->getSystemLinearMomentum();
+    vec3d speed = _world->getSystemLinearMomentum();
     //printf("%.20f %.20f %.20f\n", speed.x, speed.y, speed.z);
 
     //Mise à jour des autres composants de l'application
