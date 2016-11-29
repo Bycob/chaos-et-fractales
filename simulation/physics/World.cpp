@@ -156,3 +156,7 @@ void World::rungekutta3Bodies(double t) {
     bodies[2]->vx += (t / 6) * (k1[2][2] + 2 * k2[2][2] + 2 * k3[2][2] + k4[2][2]);
     bodies[2]->vy += (t / 6) * (k1[2][3] + 2 * k2[2][3] + 2 * k3[2][3] + k4[2][3]);
 }
+
+void World::rungekuttaNBodies(double t) {
+
+}

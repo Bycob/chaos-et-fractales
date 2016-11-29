@@ -47,6 +47,7 @@ private :
     mat3x4d rungekuttaFunc3Bodies(mat3x4d & in);
     void rungekutta3Bodies(double t);
 
+    void rungekuttaNBodies(double t);
 
 
     std::vector<std::shared_ptr<Body>> bodies;

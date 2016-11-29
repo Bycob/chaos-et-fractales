@@ -64,6 +64,23 @@ inline glm::vec3 randBrightColor() {
     return glm::vec3(r, g, b);
 }
 
+inline void printCommandDict(std::string commands[][2], int commandCount,
+                             int commandSize = 20) {
+
+    for (int i = 0 ; i < commandCount ; i++) {
+        std::string command = commands[i][0];
+        std::string description = commands[i][1];
+
+        int numSpaces = commandSize - (int) command.size();
+        if (numSpaces < 3) {
+            numSpaces = 3;
+        }
+
+        std::string spaces(numSpaces, ' ');
+        std::cout << "\t" << command << spaces << ": " << description << std::endl;
+    }
+}
+
 inline std::vector<std::string> split(const std::string & splitted, const char delim, bool trimEmpty = false) {
     std::vector<std::string> result;
     std::stringstream ss;

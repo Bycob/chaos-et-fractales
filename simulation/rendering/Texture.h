@@ -5,9 +5,9 @@
 #ifndef RENDUOPENGL_TEXTURE_H
 #define RENDUOPENGL_TEXTURE_H
 
+#include <map>
 #include <glad/glad.h>
 #include <memory>
-
 
 class Texture {
 
@@ -22,8 +22,9 @@ public :
 
     GLuint getID() {return this->id;}
 private :
-    //static std::map<std::string, GLuint> pathToIDMap; //TODO next thing todo
+    static std::map<std::string, Texture*> pathToIDMap;
 
+    std::string path;
     GLuint id = 0;
     std::shared_ptr<int> instance_count;
 };

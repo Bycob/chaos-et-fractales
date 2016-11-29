@@ -70,17 +70,16 @@ namespace parameters {
 
 
 
-
-/** Initialise la scène ainsi que le monde physique.
- * Cette méthode peut aussi servir à réinitialiser la
- * scène et le monde physique.*/
+/** Recrée la scène actuelle. */
+void recreateScene();
+/** Initialise la scène ainsi que le monde physique.*/
 void createScene();
 /// Le monde par défaut
 void addMooreSystem();
 
 
 
-
+void printHelp();
 /** Cette méthode est le coeur du thread graphique,
  * Elle crée la fenetre, charge les ressources, effectue
  * la boucle principale de l'application, gère les
@@ -94,23 +93,34 @@ void input(GLFWwindow *window);
 void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods);
 void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
+void printKeys();
+
 ///le séparateur
 bool _______IMPLEMENTATIONS__________________________________;
 
 //MAIN
 
-/* Arguments de la ligne de commande :
- * --method [méthode]
- * -m [methode] : choisir la méthode de calcul. Méthodes disponibles :
- * Euler, Runge-Kutta.
- * --input [dossier]
- * -i [dossier] : continuer une simulation précédente. Le dossier
- * indique l'emplacement de la sauvegarde.
- * --system [système]
- * -S [système] : choisir le système de départ (système solaire, ...)
- * --tick [secondes]
- * -t [secondes] choisir la durée d'un tick, qui détermine la vitesse de la simulation
- * -s [secondes] choisir le pas physique de la simulation */
+#define COMMAND_COUNT 4
+#define HELP_COMMAND_SIZE 40
+
+void printHelp() {
+
+    std::string commands[COMMAND_COUNT][2] = {
+            {"--help, -h", "Affiche ce message"},
+            {"--norender", "Lance uniquement la simulation physique, sans l'affichage"},
+            {"--pipe, -p", "Affiche en temps réel les données calculées pendant la simulation. "
+                    "Cette option est adaptée à une utilisation en pipe avec l'utilitaire display.py."},
+            {"--files, -f file1[;file2[;...]]", "Indique les fichiers de description à partir desquels "
+                "la simulation sera construite."}
+    };
+
+    std::cout << "\nBienvenue dans l'aide du programme intitulé très sobrement \"Simulation\"." << std::endl << std::endl
+            << "Usage : \n\tsimulation [arguments...]" << std::endl << std::endl
+            << "Commandes disponibles : " << std::endl;
+
+    printCommandDict(commands, COMMAND_COUNT, HELP_COMMAND_SIZE);
+    std::cout << std::endl;
+}
 
 int main(int argc, char** argv) {
     //printf("nombre : %.80f\n", sqrt(10.0)); //;)
@@ -119,20 +129,29 @@ int main(int argc, char** argv) {
     //TODO déterminer la date
     //TODO pouvoir reprendre les résultats de la simulation précédente
 
-    //TODO Analyse des arguments => faire quelque chose de propre
     for (int i = 0 ; i < argc ; i++) {
-        if (strcmp(argv[i], "pipe") == 0) {
+        //Traitement générique
+        std::string arg(argv[i]);
+        std::string param;
+        if (argc < i + 1 && argv[i + 1][0] != '-') {
+            param = std::string(argv[i + 1]);
+        }
+
+        if (arg == "--pipe" || arg == "-p") {
             parameters::pipeMode = true;
         }
-        else if (strcmp(argv[i], "norender") == 0) {
+        else if (arg == "--norender") {
             parameters::enableRender = false;
         }
-        else if (strcmp(argv[i], "-f") == 0) {
-            if (i + 1 != argc) {
-                std::string arg(argv[i + 1]);
-                parameters::filenames.push_back(arg);
-                //TODO split
+        else if (arg == "-f" || arg == "--files") {
+            if (param != "") {
+                parameters::filenames.push_back(param);
             }
+            //TODO split
+        }
+        else if (arg == "--help" || arg == "-h") {
+            printHelp();
+            exit(0);
         }
     }
 
@@ -147,6 +166,12 @@ int main(int argc, char** argv) {
 
 // CREATION DE LA SCENE
 
+void recreateScene() {
+    //On effectue les derniers traitements
+
+    //On raffraichit la scène.
+    createScene();
+}
 
 void createScene() {
     // On essaie avec les noms de fichiers
@@ -405,7 +430,7 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
         }
         // Reload file
         else if (key == GLFW_KEY_ENTER && (mods & (GLFW_MOD_CONTROL + GLFW_MOD_SHIFT)) != 0) {
-            createScene();
+            recreateScene();
         }
     }
 }

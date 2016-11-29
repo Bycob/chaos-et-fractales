@@ -6,8 +6,16 @@
 
 #include "Texture.h"
 
+std::map<std::string, Texture*> Texture::pathToIDMap;
+
 Texture Texture::load(const std::string & path) {
 
+    //Si l'image est déjà dans la table, quelle aubaine !
+    if (pathToIDMap.find(path) != pathToIDMap.end()) {
+        return Texture(*pathToIDMap[path]);
+    }
+
+    //Lecture de l'image
     cv::Mat imageBGR;
     imageBGR = cv::imread(path, 1);
 
@@ -19,6 +27,7 @@ Texture Texture::load(const std::string & path) {
     int height = imageBGR.rows;
     int size = imageBGR.channels();
 
+    // openCV charge l'image en BGR, on la veut en RGB
     if (size == 3) {
         cv::cvtColor(imageBGR, imageBGR, CV_BGR2RGB);
     }
@@ -28,8 +37,14 @@ Texture Texture::load(const std::string & path) {
 
     auto data = imageBGR.data;
 
+    //Détermination du format openGL
     GLint internalFormat = size == 3 ? GL_RGB : (size == 4 ? GL_RGBA : 0); //TODO complèter
+
     Texture result(width, height, data, internalFormat, internalFormat);
+
+    //Enregistrement de la texture dans la map, pour ne pas la recharger inutilement
+    pathToIDMap[path] = &result;
+    result.path = path;
 
     return result;
 }
@@ -54,14 +69,24 @@ Texture::Texture(int width, int height, const unsigned char* pixel, GLint intern
 Texture::Texture(const Texture &other) {
     this->id = other.id;
     this->instance_count = other.instance_count;
+    this->path = other.path;
 
     *this->instance_count += 1;
 }
 
 Texture::~Texture() {
+    //TODO débugger cette portion
+    if (this->instance_count == nullptr) return;
+
     *this->instance_count -= 1;
 
     if (*this->instance_count ==0) {
         glDeleteTextures(1, &this->id);
+        this->instance_count.reset();
+
+        //Suppression de la table
+        if (path != "") {
+            pathToIDMap.erase(path);
+        }
     }
 }
