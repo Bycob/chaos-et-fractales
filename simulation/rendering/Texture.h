@@ -23,6 +23,7 @@ public :
 
     GLuint getID() {return this->id;}
 private :
+    //TODO déplacer ça dans Context
     static std::map<std::string, Texture*> pathToIDMap;
 
     std::string path;

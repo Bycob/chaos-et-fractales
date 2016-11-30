@@ -35,7 +35,7 @@ public :
     GLFWwindow * const window() {return _window;};
 private :
     GLFWwindow * _window;
-    bool _destroyed = false; //TODO throw error everywhere if destroyed
+    bool _destroyed = false; //TODO throw error everywhere if called when destroyed
 
     std::unique_ptr<Context> _context;
 };

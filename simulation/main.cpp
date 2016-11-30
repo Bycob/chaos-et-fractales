@@ -28,7 +28,7 @@
 #define CLEAR_COLOR_G 0
 #define CLEAR_COLOR_B 24
 
-#define COMMAND_COUNT 4
+#define COMMAND_COUNT 5
 #define HELP_COMMAND_SIZE 40
 
 //DECLARATIONS
@@ -108,7 +108,10 @@ void printHelp() {
             {"--pipe, -p", "Affiche en temps réel les données calculées pendant la simulation. "
                     "Cette option est adaptée à une utilisation en pipe avec l'utilitaire display.py."},
             {"--files, -f file1[;file2[;...]]", "Indique les fichiers de description à partir desquels "
-                "la simulation sera construite."}
+                "la simulation sera construite."},
+            {"--tick, -t value", "Définit la résolution graphique de la simulation, c'est-à-dire "
+                "l'espace entre deux points enregistrés dans le fichier. Cette option n'est disponible "
+                "qu'en mode --norender."}
     };
 
     std::cout << "\nBienvenue dans l'aide du programme intitulé très sobrement \"Simulation\"." << std::endl << std::endl
@@ -144,7 +147,7 @@ int main(int argc, char** argv) {
             if (param != "") {
                 parameters::filenames.push_back(param);
             }
-            //TODO split
+            //TODO multiples fichiers
         }
         else if (arg == "--help" || arg == "-h") {
             printHelp();
