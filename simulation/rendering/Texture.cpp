@@ -12,7 +12,8 @@ Texture Texture::load(const std::string & path) {
 
     //Si l'image est déjà dans la table, quelle aubaine !
     if (pathToIDMap.find(path) != pathToIDMap.end()) {
-        return Texture(*pathToIDMap[path]);
+        Texture* alreadyLoaded(pathToIDMap[path]);
+        return Texture(*alreadyLoaded);
     }
 
     //Lecture de l'image
@@ -41,12 +42,20 @@ Texture Texture::load(const std::string & path) {
     GLint internalFormat = size == 3 ? GL_RGB : (size == 4 ? GL_RGBA : 0); //TODO complèter
 
     Texture result(width, height, data, internalFormat, internalFormat);
-
-    //Enregistrement de la texture dans la map, pour ne pas la recharger inutilement
-    pathToIDMap[path] = &result;
     result.path = path;
 
+    //Enregistrement de la texture dans la map, pour ne pas la recharger inutilement
+    pathToIDMap[path] = new Texture(result);
+
     return result;
+}
+
+void Texture::clearCache() {
+    for (auto texture : pathToIDMap) {
+        delete texture.second;
+    }
+
+    pathToIDMap.clear();
 }
 
 Texture::Texture(int width, int height, const unsigned char* pixel, GLint internalFormat, GLenum format) {
@@ -75,18 +84,10 @@ Texture::Texture(const Texture &other) {
 }
 
 Texture::~Texture() {
-    //TODO débugger cette portion
-    if (this->instance_count == nullptr) return;
-
     *this->instance_count -= 1;
 
-    if (*this->instance_count ==0) {
+    if (*this->instance_count == 0) {
         glDeleteTextures(1, &this->id);
         this->instance_count.reset();
-
-        //Suppression de la table
-        if (path != "") {
-            pathToIDMap.erase(path);
-        }
     }
 }

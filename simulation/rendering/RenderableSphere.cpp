@@ -23,11 +23,11 @@ RenderableSphere::RenderableSphere(float radius, int segmentCount, int ringCount
 void RenderableSphere::render(Context *context, Scene *scene) {
     if (!this->shouldRender()) return;
 
-    if (!compiled) buildModelData(context);
-
     if (_specialShader != "") {
         context->setCurrentProgram(_specialShader);
     }
+
+    if (!compiled) buildModelData(context);
 
     //Translation
     glm::mat4x4 model = glm::translate(glm::mat4x4(), glm::tvec3<float>(this->x, this->y, this->z));

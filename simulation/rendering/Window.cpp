@@ -68,6 +68,9 @@ void Window::setScrollCallback(GLFWscrollfun func) {
 }
 
 void Window::setupFrame() {
+
+    glfwMakeContextCurrent(_window);
+
     int width, height;
     glfwGetFramebufferSize(_window, &width, &height);
     glViewport(0, 0, width, height);

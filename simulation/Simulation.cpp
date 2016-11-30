@@ -151,8 +151,12 @@ void Simulation::parse(std::string loadedFile) {
                     else if (key == "light.pos") {
                         glm::vec3 lightPos;
                         parseFloatVec3(value, lightPos, "light.pos");
+
+                        light.setLightPosition(lightPos.x, lightPos.y, lightPos.z);
                     }
                 }
+
+                _scene->setLight(light);
             }
         }
         //Line

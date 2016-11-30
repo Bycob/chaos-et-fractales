@@ -65,6 +65,7 @@ void Scene::setSphereMap(std::string texturePath) {
 }
 
 void Scene::addObject(std::shared_ptr<Renderable> renderable) {
+    // Tri à l'insertion
     auto index = objects.begin();
     for ( ; index != objects.end() ; ++index) {
         std::shared_ptr<Renderable> inplace = *index;
@@ -74,5 +75,6 @@ void Scene::addObject(std::shared_ptr<Renderable> renderable) {
         }
     }
 
+    // Ajout de l'objet à la place trouvée par le tri.
     objects.insert(index, std::shared_ptr<Renderable>(renderable));
 }

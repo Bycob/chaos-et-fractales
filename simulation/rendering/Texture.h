@@ -14,6 +14,7 @@ class Texture {
 public :
 
     static Texture load(const std::string & path);
+    static void clearCache();
 
     Texture(int width, int height, const unsigned char* pixel,
             GLint internalFormat = GL_RGBA, GLenum format = GL_RGBA);

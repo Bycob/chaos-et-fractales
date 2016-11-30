@@ -24,12 +24,12 @@
 #include "physics/World.h"
 #include "physics/Body.h"
 
-//TODO rajouter des constantes
 #define CLEAR_COLOR_R 3
 #define CLEAR_COLOR_G 0
 #define CLEAR_COLOR_B 24
 
-
+#define COMMAND_COUNT 4
+#define HELP_COMMAND_SIZE 40
 
 //DECLARATIONS
 
@@ -100,9 +100,6 @@ bool _______IMPLEMENTATIONS__________________________________;
 
 //MAIN
 
-#define COMMAND_COUNT 4
-#define HELP_COMMAND_SIZE 40
-
 void printHelp() {
 
     std::string commands[COMMAND_COUNT][2] = {
@@ -133,7 +130,7 @@ int main(int argc, char** argv) {
         //Traitement générique
         std::string arg(argv[i]);
         std::string param;
-        if (argc < i + 1 && argv[i + 1][0] != '-') {
+        if (argc > i + 1 && argv[i + 1][0] != '-') {
             param = std::string(argv[i + 1]);
         }
 
@@ -168,6 +165,7 @@ int main(int argc, char** argv) {
 
 void recreateScene() {
     //On effectue les derniers traitements
+    runtime::currentPlanet = 0;
 
     //On raffraichit la scène.
     createScene();
@@ -431,6 +429,10 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
         // Reload file
         else if (key == GLFW_KEY_ENTER && (mods & (GLFW_MOD_CONTROL + GLFW_MOD_SHIFT)) != 0) {
             recreateScene();
+        }
+        // Quit (Ctrl+Q)
+        else if (key == GLFW_KEY_A && (mods & (GLFW_MOD_CONTROL)) != 0) {//A us = Q fr
+            runtime::running = false;
         }
     }
 }
