@@ -50,6 +50,8 @@ namespace runtime {
     bool enableTrajectory = true;
     /// Si true alors on voit les planètes.
     bool displayPlanets = true;
+
+    int currentSimulation = 0;
 }
 
 namespace parameters {
@@ -145,9 +147,8 @@ int main(int argc, char** argv) {
         }
         else if (arg == "-f" || arg == "--files") {
             if (param != "") {
-                parameters::filenames.push_back(param);
+                parameters::filenames = split(param, ';');
             }
-            //TODO multiples fichiers
         }
         else if (arg == "--help" || arg == "-h") {
             printHelp();
@@ -177,9 +178,9 @@ void recreateScene() {
 void createScene() {
     // On essaie avec les noms de fichiers
     bool fileParsed = false;
-    if (parameters::filenames.size() != 0) {
+    if (parameters::filenames.size() > runtime::currentSimulation) {
         try {
-            runtime::simulation = std::make_unique<Simulation>("files", parameters::filenames[0]);
+            runtime::simulation = std::make_unique<Simulation>("files", parameters::filenames[runtime::currentSimulation]);
             fileParsed = true;
         }
         catch (std::runtime_error & e) {
@@ -210,7 +211,8 @@ void addMooreSystem() {
 
     //Rendus
     auto body1Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
-    body1Render->getMaterial().setDiffuse(1, 0, 0);
+    body1Render->addTexturePath("assets/billard1.png");
+    //body1Render->getMaterial().setDiffuse(1, 0, 0);
 
     auto body2Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
     body2Render->getMaterial().setDiffuse(0, 1, 0);
@@ -342,6 +344,7 @@ void input(GLFWwindow * window) {
     int leftKey = glfwGetKey(window, GLFW_KEY_LEFT);
     int upKey = glfwGetKey(window, GLFW_KEY_UP);
     int downKey = glfwGetKey(window, GLFW_KEY_DOWN);
+    int ctrlKey = glfwGetKey(window, GLFW_KEY_LEFT_CONTROL);
 
     Scene & scene = runtime::simulation->scene();
 
@@ -355,10 +358,10 @@ void input(GLFWwindow * window) {
         glm::vec3 cameraUp = scene.camera().getUp();
 
         if (cameraUp.x == 0 && cameraUp.y == 0) {
-            if (rightKey == GLFW_PRESS && leftKey != GLFW_PRESS) {
+            if (rightKey == GLFW_PRESS && leftKey != GLFW_PRESS && ctrlKey != GLFW_PRESS) {
                 scene.camera().rotateZ(180.0f / 70.0f);
             }
-            else if (leftKey == GLFW_PRESS && rightKey != GLFW_PRESS) {
+            else if (leftKey == GLFW_PRESS && rightKey != GLFW_PRESS && ctrlKey != GLFW_PRESS) {
                 scene.camera().rotateZ(- 180.0f / 70.0f);
             }
 
@@ -431,6 +434,17 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
         }
         // Reload file
         else if (key == GLFW_KEY_ENTER && (mods & (GLFW_MOD_CONTROL + GLFW_MOD_SHIFT)) != 0) {
+            recreateScene();
+        }
+        // Change file
+        else if (key == GLFW_KEY_RIGHT && (mods & (GLFW_MOD_CONTROL)) != 0) {
+            if (parameters::filenames.size() - 1 <= runtime::currentSimulation) return;
+            runtime::currentSimulation++;
+            recreateScene();
+        }
+        else if (key == GLFW_KEY_LEFT && (mods & (GLFW_MOD_CONTROL)) != 0) {
+            if (runtime::currentSimulation <= 0) return;
+            runtime::currentSimulation--;
             recreateScene();
         }
         // Quit (Ctrl+Q)

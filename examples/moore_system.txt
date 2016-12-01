@@ -1,0 +1,9 @@
+// Cette ligne définit les paramètres de la simulation
+
+#name=moore_system ; method = RUNGE_KUTTA ; light.type= SUN ; light.pos=(0, 0, 1)
+
+//On déclare ensuite les corps, un par ligne.
+
+name=body1 ; mass= 1e13; position=(0, 0, 0) ; speed= (0, 0, 0) ; radius = 0.8;diffuse = (1, 0, 0)
+name=0;radius=0;mass=0
+name=0;radius=0;mass=0

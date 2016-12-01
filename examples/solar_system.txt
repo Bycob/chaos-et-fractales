@@ -1,8 +1,8 @@
-// Cette ligne définit les paramètres de la simulation
+// Cette ligne dÃ©finit les paramÃ¨tres de la simulation
 
 #name=solar_system ; method = EULER ; Gfactor=1e3 ; light.type= POINT ; light.pos=(0, 0, 0)
 
-//On déclare ensuite les corps, un par ligne.
+//On dÃ©clare ensuite les corps, un par ligne.
 
 name=sun ; mass= 2e9; position=(0, 0, 0) ; speed= (0, 0, 0) ; radius = 3; texture = assets/sun.png ; ambient= (0.85, 0.25, 0.1) ; emit=true
 name=earth ; mass = 6000 ; position=(-15, 0, 0) ; speed=(0, -2.9, 0) ; radius = 0.8 ; texture=assets/earth.png

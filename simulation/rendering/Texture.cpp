@@ -79,14 +79,10 @@ Texture::Texture(const Texture &other) {
     this->id = other.id;
     this->instance_count = other.instance_count;
     this->path = other.path;
-
-    *this->instance_count += 1;
 }
 
 Texture::~Texture() {
-    *this->instance_count -= 1;
-
-    if (*this->instance_count == 0) {
+    if (this->instance_count.use_count() == 1) {
         glDeleteTextures(1, &this->id);
         this->instance_count.reset();
     }

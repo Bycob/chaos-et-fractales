@@ -171,6 +171,7 @@ void Simulation::parse(std::string loadedFile) {
             std::string texture = "";
             glm::vec3 ambient(0.2, 0.2, 0.2);
             glm::vec3 diffuse(1, 1, 1);
+            glm::vec3 specular(1, 1, 1);
             bool emit = false;
 
             for (std::string &param : params) {
@@ -219,8 +220,11 @@ void Simulation::parse(std::string loadedFile) {
                 else if (key == "ambient") {
                     parseFloatVec3(value, ambient, "ambient");
                 }
-                else if (key == "specular") {
+                else if (key == "diffuse") {
                     parseFloatVec3(value, diffuse, "diffuse");
+                }
+                else if (key == "specular") {
+                    parseFloatVec3(value, specular, "specular");
                 }
                 else if (key == "emit") {
                     emit = value == "true" || value == "1";
@@ -241,6 +245,7 @@ void Simulation::parse(std::string loadedFile) {
                 render->getMaterial().setEmit(emit);
                 render->getMaterial().setAmbient(ambient.r, ambient.g, ambient.b);
                 render->getMaterial().setDiffuse(diffuse.r, diffuse.g, diffuse.b);
+                render->getMaterial().setSpecular(specular.r, specular.g, specular.b);
 
                 //Paramétrage de la planète
                 Planet toAdd(name, body, render);
@@ -248,6 +253,10 @@ void Simulation::parse(std::string loadedFile) {
                 addPlanet(toAdd);
             }
         }
+    }
+
+    if (_planets.size() == 3) {
+        set3BodiesSpecial();
     }
 }
 
