@@ -53,10 +53,33 @@ public :
 
     //Contrôles du rendu
 
+    /** Ajoute un traveling à la caméra vers la planète dont l'ID
+     * est passé en paramètres.
+     * @param planet l'ID de la planète sur laquelle faire le focus.
+     * Si aucune planète de la simulation ne porte cet ID, alors
+     * il ne se passe rien. */
     void setCameraPlanet(int planet);
+    /** Détermine s'il faut ou non afficher les trajectoires.
+     * Cette méthode applique ses effets sur les simulations
+     * enfant.
+     * @param visible si <tt>true</tt> alors les trajectoires
+     * deviennent visibles, sinon leur affichage est désactivé.*/
     void setTrajectoryVisibility(bool visible);
+    /** Remet la trajectoire des planètes à 0. Autrement dit supprime
+     * tous les points enregistrés sur toutes les trajectoires.
+     * Cette méthode applique ses effets sur les simulations
+     * enfant.*/
     void resetTrajectories();
+    /** Détermine s'il faut ou non afficher les planètes.
+     * Cette méthode applique ses effets sur les simulations
+     * enfant.
+     * @param visible si <tt>true</tt> alors les planètes
+     * deviennent visibles, sinon leur affichage est désactivé.  */
     void setPlanetVisibility(bool visible);
+    /** Définit le caractère "shadow" de la simulation, c'est
+     * à dire si elle est affichée en transparence ou non.
+     * @param shadow si <tt>true</tt> alors la simulation est
+     * affichée en transparence, sinon elle ne l'est pas.*/
     void setShadowSimulation(bool shadow);
 
 
@@ -80,9 +103,15 @@ public :
     }
     void update(double time, bool printInfos = false);
 
+    // Données
+
     void writeFiles();
 
 private :
+    /// Constructeur appelé pour créer des simulations
+    /// asservies (enfant).
+    Simulation(const Simulation * parent);
+
     void parse(std::string loadedFile);
 
     /// Si la simulation a été créée à partir d'un fichier, contient
@@ -117,11 +146,12 @@ private :
     /// Le pas de discrétisation physique de la simulation.
     double _physicalStep = DEFAULT_PHYSICAL_STEP;
 
+    const Simulation * _parent;
     /// Les simulation enfant à cette simulation. Les enfants sont esclaves de
-    /// la simulation parente.
+    /// la simulation parente et lui appartiennent à jamais
     std::vector<std::unique_ptr<Simulation>> _children;
     /// La scène qui contient les objets à afficher (planètes, trajectoires...)
-    std::unique_ptr<Scene> _scene = nullptr;
+    std::shared_ptr<Scene> _scene = nullptr;
     /// Le monde qui contient les parties physiques des objets
     std::unique_ptr<World> _world = nullptr;
     /// L'ensemble des planètes de la simulation.

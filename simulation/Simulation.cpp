@@ -33,6 +33,7 @@ void parseDoubleVec3(const std::string &str, vec3d & result, const std::string &
 }
 
 
+//HERE STARTS Planet STRUCT
 
 
 Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<RenderableSphere> render)
@@ -42,11 +43,13 @@ Planet::Planet(std::string name, std::shared_ptr<Body> body, std::shared_ptr<Ren
 }
 
 
+//HERE STARTS Simulation CLASS
 
 
 Simulation::Simulation(std::string name) : _name(name),
-                                           _scene(std::make_unique<Scene>()),
-                                           _world(std::make_unique<World>()) {
+                                           _scene(std::make_shared<Scene>()),
+                                           _world(std::make_unique<World>()),
+                                           _parent(nullptr) {
 
     _speedIndicator = std::make_shared<SpeedIndicator>("assets/speed_indicator.png");
     setTimeMultiplier(2);
@@ -67,6 +70,13 @@ Simulation::Simulation(std::string name, std::string loadFile) : Simulation(name
     parse(contents);
 }
 
+Simulation::Simulation(const Simulation *parent) : _name(parent->_name + "_child"),
+                                                   _scene(parent->_scene),
+                                                   _world(std::make_unique<World>()),
+                                                   _parent(parent) {
+
+}
+
 void Simulation::parse(std::string loadedFile) {
     std::vector<std::string> lines = split(loadedFile, '\n', true);
     Simulation* readSimulation = this;
@@ -84,7 +94,7 @@ void Simulation::parse(std::string loadedFile) {
         else if (line.size() > 0 && line.at(0) == '#') {
             //On ne prend en compte la ligne que si c'est la première du fichier
             if (parsingStarted) {
-                std::unique_ptr<Simulation> child = std::make_unique<Simulation>("files");
+                std::unique_ptr<Simulation> child = std::make_unique<Simulation>(this);
                 readSimulation = child.get();
                 this->_children.push_back(std::move(child));
             } else {

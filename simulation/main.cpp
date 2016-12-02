@@ -349,12 +349,13 @@ void input(GLFWwindow * window) {
     Scene & scene = runtime::simulation->scene();
 
     if (!scene.camera().isTraveling()) {
-        //Mise à jour en fonction de la planete actuelle
+        //Si une planète est définie comme centre de la vue, alors on déplace la caméra pour que ce soit le cas.
         if (runtime::currentPlanet != -1 && runtime::currentPlanet < runtime::simulation->getPlanetCount()) {
             glm::vec3 planetGraphicalPos = runtime::simulation->getPlanet(runtime::currentPlanet).render->getPosition();
             scene.camera().moveCameraByCenterPoint(planetGraphicalPos.x, planetGraphicalPos.y, planetGraphicalPos.z);
         }
 
+        //Gestion des contrôles de la caméra (mouvement gauche / droite / haut / bas)
         glm::vec3 cameraUp = scene.camera().getUp();
 
         if (cameraUp.x == 0 && cameraUp.y == 0) {
