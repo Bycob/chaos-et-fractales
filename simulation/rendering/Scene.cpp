@@ -13,6 +13,8 @@
 #include "Program.h"
 #include "RenderableSphere.h"
 
+#define SPHERE_MAP_RESOLUTION 50
+
 Scene::Scene() : _camera(), _light(), _sphereMap(nullptr) {
 
 }
@@ -58,7 +60,7 @@ void Scene::setSphereMap(std::string texturePath) {
         this->_sphereMap = nullptr;
     }
     else {
-        this->_sphereMap = std::make_unique<RenderableSphere>(5, 10, 10);
+        this->_sphereMap = std::make_unique<RenderableSphere>(0.5, SPHERE_MAP_RESOLUTION, SPHERE_MAP_RESOLUTION);
         this->_sphereMap->addTexturePath(texturePath);
         this->_sphereMap->setSpecialShader("cubemap");
     }

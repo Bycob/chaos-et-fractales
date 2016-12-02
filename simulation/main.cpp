@@ -198,7 +198,7 @@ void createScene() {
     runtime::simulation->setTrajectoryVisibility(runtime::enableTrajectory);
     runtime::simulation->setPlanetVisibility(runtime::displayPlanets);
 
-    runtime::simulation->scene().setSphereMap("assets/galaxy2.png");
+    runtime::simulation->scene().setSphereMap("assets/galaxyhd.png");
 }
 
 void addMooreSystem() {
@@ -378,9 +378,19 @@ void input(GLFWwindow * window) {
     }
 }
 
+#define KEY_COMMAND_COUNT
+
+void printKeys() {
+    std::cout << "\nCommandes de la caméra : " << std::endl;
+}
+
 void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
 
     if (action == GLFW_PRESS) {
+        // Aide
+        if (key == GLFW_KEY_ENTER && ((GLFW_MOD_SHIFT + GLFW_MOD_CONTROL) & mods) == 0) {
+            printKeys();
+        }
         // Vue de dessus
         if (key == GLFW_KEY_KP_0) {
             runtime::currentPlanet = -1;
@@ -437,14 +447,20 @@ void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int 
             recreateScene();
         }
         // Change file
-        else if (key == GLFW_KEY_RIGHT && (mods & (GLFW_MOD_CONTROL)) != 0) {
+        else if (key == GLFW_KEY_TAB && (mods & (GLFW_MOD_SHIFT)) == 0) {
             if (parameters::filenames.size() - 1 <= runtime::currentSimulation) return;
             runtime::currentSimulation++;
+            if (!parameters::pipeMode) {
+                std::cout << "\nChangement vers simulation n°" << (runtime::currentSimulation + 1) << std::endl;
+            }
             recreateScene();
         }
-        else if (key == GLFW_KEY_LEFT && (mods & (GLFW_MOD_CONTROL)) != 0) {
+        else if (key == GLFW_KEY_TAB && (mods & (GLFW_MOD_SHIFT)) != 0) {
             if (runtime::currentSimulation <= 0) return;
             runtime::currentSimulation--;
+            if (!parameters::pipeMode) {
+                std::cout << "\nChangement vers simulation n°" << (runtime::currentSimulation + 1) << std::endl;
+            }
             recreateScene();
         }
         // Quit (Ctrl+Q)

@@ -9,5 +9,5 @@ out vec4 finalColor;
 
 void main() {
     //On a simplement la couleur de la cubemap.
-    finalColor = texture(tex, fragTexCoord) - vec4(0.1);
+    finalColor = texture(tex, fragTexCoord);
 }

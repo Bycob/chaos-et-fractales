@@ -138,22 +138,22 @@ void RenderableSphere::buildModelData(Context *context) {
             //COORDONNEES DE TEXTURE
             int texIndex = vertPerFace * index * floatPerTexCoord;
             texCoords[texIndex] = (float) i / segmentCount;
-            texCoords[texIndex + 1] = (float) j / ringCount;
+            texCoords[texIndex + 1] = (float) j / (ringCount + 1);
 
             texCoords[texIndex + 2] = (float) i / segmentCount;
-            texCoords[texIndex + 3] = (float) (j+1) / ringCount;
+            texCoords[texIndex + 3] = (float) (j+1) / (ringCount + 1);
 
             texCoords[texIndex + 4] = (float) (i+1) / segmentCount;
-            texCoords[texIndex + 5] = (float) (j+1) / ringCount;
+            texCoords[texIndex + 5] = (float) (j+1) / (ringCount + 1);
 
             texCoords[texIndex + 6] = (float) i / segmentCount;
-            texCoords[texIndex + 7] = (float) j / ringCount;
+            texCoords[texIndex + 7] = (float) j / (ringCount + 1);
 
             texCoords[texIndex + 8] = (float) (i+1) / segmentCount;
-            texCoords[texIndex + 9] = (float) (j+1) / ringCount;
+            texCoords[texIndex + 9] = (float) (j+1) / (ringCount + 1);
 
             texCoords[texIndex + 10] = (float) (i+1) / segmentCount;
-            texCoords[texIndex + 11] = (float) j / ringCount;
+            texCoords[texIndex + 11] = (float) j / (ringCount + 1);
         }
     }
 
