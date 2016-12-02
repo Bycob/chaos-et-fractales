@@ -211,8 +211,7 @@ void addMooreSystem() {
 
     //Rendus
     auto body1Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
-    body1Render->addTexturePath("assets/billard1.png");
-    //body1Render->getMaterial().setDiffuse(1, 0, 0);
+    body1Render->getMaterial().setDiffuse(1, 0, 0);
 
     auto body2Render = std::make_shared<RenderableSphere>(0.8, 64, 64);
     body2Render->getMaterial().setDiffuse(0, 1, 0);

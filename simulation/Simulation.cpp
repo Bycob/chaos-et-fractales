@@ -75,6 +75,7 @@ Simulation::Simulation(const Simulation *parent) : _name(parent->_name + "_child
                                                    _world(std::make_unique<World>()),
                                                    _parent(parent) {
 
+    setTimeMultiplier(2);
 }
 
 void Simulation::parse(std::string loadedFile) {
@@ -94,7 +95,7 @@ void Simulation::parse(std::string loadedFile) {
         else if (line.size() > 0 && line.at(0) == '#') {
             //On ne prend en compte la ligne que si c'est la première du fichier
             if (parsingStarted) {
-                std::unique_ptr<Simulation> child = std::make_unique<Simulation>(this);
+                std::unique_ptr<Simulation> child(new Simulation(this));
                 readSimulation = child.get();
                 this->_children.push_back(std::move(child));
             } else {
@@ -170,6 +171,10 @@ void Simulation::parse(std::string loadedFile) {
                     parseFloatVec3(value, lightPos, "light.pos");
 
                     light.setLightPosition(lightPos.x, lightPos.y, lightPos.z);
+                }
+                else if (key == "shadow") {
+                    bool shadow = value == "true";
+                    readSimulation->setShadowSimulation(shadow);
                 }
             }
 
@@ -294,12 +299,19 @@ void Simulation::addPlanet(Planet planet) {
         _world->addObject(planet.body);
     }
     if (planet.render != nullptr) {
+        //Ajout du rendu principal
         _scene->addObject(planet.render);
-        _scene->addObject(planet.trajectory);
         planet.render->getMaterial().setSpecular(0, 0, 0);
 
+        //Ajout de la trajectoire
+        _scene->addObject(planet.trajectory);
         glm::vec3 color = randBrightColor();
         planet.trajectory->setColor(color.r, color.g, color.b);
+
+        //Si la simulation est shadow, application de ce paramètres à la nouvelle planète
+        if (_isShadow) {
+            planet.render->getMaterial().setAlpha(SHADOW_ALPHA);
+        }
     }
     planet.buffer->setFilename(_name + "/" + planet.name);
 }
@@ -391,7 +403,9 @@ void Simulation::setTimeMultiplier(int multiplier) {
 
     _timeMultiplier = multiplier;
 
-    _speedIndicator->setSpeed((uint) _timeMultiplier);
+    if (_speedIndicator != nullptr) {
+        _speedIndicator->setSpeed((uint) _timeMultiplier);
+    }
     _timeScale = BASE_TIME_SCALE * pow(COMMON_RATIO, _timeMultiplier);
 }
 

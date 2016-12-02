@@ -10,7 +10,7 @@
 #include "SpeedIndicator.h"
 #include "FileBuffer.h"
 
-#define SHADOW_ALPHA 0.2f
+#define SHADOW_ALPHA 0.4f
 
 #define DEFAULT_PHYSICAL_STEP 0.0001
 #define BASE_TIME_SCALE 0.1

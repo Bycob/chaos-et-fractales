@@ -1,9 +1,13 @@
-// Cette ligne définit les paramètres de la simulation
+// Simulation du système de Moore. Pour la doc, voir le fichier solar_system.txt
 
 #name=moore_system ; method = RUNGE_KUTTA ; light.type= SUN ; light.pos=(0, 0, 1)
 
-//On déclare ensuite les corps, un par ligne.
+name=body1 ; mass= 1.5e13; position=(0, 0, 0) ; speed= (10, 10, 0) ; radius = 0.8;diffuse = (1, 0, 0)
+name=body2 ; mass = 1.5e13; position = (10, 0, 0) ; speed = (-5, -5, 0) ;radius=0.8 ; diffuse = (0, 1, 0)
+name=body3 ; mass = 1.5e13 ; position = (-10, 0, 0) ; speed = (-5, -5, 0) ;radius=0.8 ; diffuse = (0, 0, 1)
 
-name=body1 ; mass= 1e13; position=(0, 0, 0) ; speed= (0, 0, 0) ; radius = 0.8;diffuse = (1, 0, 0)
-name=0;radius=0;mass=0
-name=0;radius=0;mass=0
+#name=moore_system2 ; method = RUNGE_KUTTA ; light.type= SUN ; light.pos=(0, 0, 1) ; shadow = true
+
+name=body1 ; mass= 1.501e13; position=(0, 0, 0) ; speed= (10, 10, 0) ; radius = 0.8;diffuse = (1, 0, 0)
+name=body2 ; mass = 1.5e13; position = (10, 0, 0) ; speed = (-5, -5, 0) ;radius=0.8 ; diffuse = (0, 1, 0)
+name=body3 ; mass = 1.5e13 ; position = (-10, 0, 0) ; speed = (-5, -5, 0) ;radius=0.8 ; diffuse = (0, 0, 1)
