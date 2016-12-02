@@ -198,7 +198,7 @@ void createScene() {
     runtime::simulation->setTrajectoryVisibility(runtime::enableTrajectory);
     runtime::simulation->setPlanetVisibility(runtime::displayPlanets);
 
-    runtime::simulation->scene().setSphereMap("assets/galaxy.png");
+    runtime::simulation->scene().setSphereMap("assets/galaxy2.png");
 }
 
 void addMooreSystem() {
