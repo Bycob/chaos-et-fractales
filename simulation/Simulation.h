@@ -117,6 +117,9 @@ private :
     /// Le pas de discrétisation physique de la simulation.
     double _physicalStep = DEFAULT_PHYSICAL_STEP;
 
+    /// Les simulation enfant à cette simulation. Les enfants sont esclaves de
+    /// la simulation parente.
+    std::vector<std::unique_ptr<Simulation>> _children;
     /// La scène qui contient les objets à afficher (planètes, trajectoires...)
     std::unique_ptr<Scene> _scene = nullptr;
     /// Le monde qui contient les parties physiques des objets

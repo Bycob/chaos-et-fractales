@@ -69,10 +69,14 @@ Simulation::Simulation(std::string name, std::string loadFile) : Simulation(name
 
 void Simulation::parse(std::string loadedFile) {
     std::vector<std::string> lines = split(loadedFile, '\n', true);
+    Simulation* readSimulation = this;
 
     bool parsingStarted = false;
 
     for (auto &line : lines) {
+        //On enlève les espaces au début et à la fin
+        line = trimSpaces(line);
+
         //Parametres généraux
         if (startsWith(line, "//")) {
             //Do nothing, it's comment
@@ -80,84 +84,86 @@ void Simulation::parse(std::string loadedFile) {
         else if (line.size() > 0 && line.at(0) == '#') {
             //On ne prend en compte la ligne que si c'est la première du fichier
             if (parsingStarted) {
-                return;
+                std::unique_ptr<Simulation> child = std::make_unique<Simulation>("files");
+                readSimulation = child.get();
+                this->_children.push_back(std::move(child));
             } else {
                 parsingStarted = true;
-                std::string paramsLine = line.substr(1);
-                std::vector<std::string> params = split(paramsLine, ';', true);
+            }
+            std::string paramsLine = line.substr(1);
+            std::vector<std::string> params = split(paramsLine, ';', true);
 
-                //Déclaration des variables utiles
-                Light light;
+            //Déclaration des variables utiles
+            Light light;
 
-                //Analyse de chaque paramètre
-                for (std::string &param : params) {
-                    std::vector<std::string> keyvalue = split(param, '=', true);
-                    if (keyvalue.size() != 2) continue;
+            //Analyse de chaque paramètre
+            for (std::string &param : params) {
+                std::vector<std::string> keyvalue = split(param, '=', true);
+                if (keyvalue.size() != 2) continue;
 
-                    std::string key = trimSpaces(keyvalue[0]);
-                    std::string value = trimSpaces(keyvalue[1]);
+                std::string key = trimSpaces(keyvalue[0]);
+                std::string value = trimSpaces(keyvalue[1]);
 
-                    //Paramètrage de la scène en fonction du couple key, value
-                    if (key == "name") {
-                        if (value.size() != 0 || value.find(' ') != -1) {
-                            continue;
-                        }
-                        _name = value;
+                //Paramètrage de la scène en fonction du couple key, value
+                if (key == "name") {
+                    if (value.size() != 0 || value.find(' ') != -1) {
+                        continue;
                     }
-                    else if (key == "method") {
-                        if (value == "RUNGE_KUTTA") {
-                            _world->setMethod(Method::RUNGE_KUTTA);
-                        }
-                        else if (value == "EULER") {
-                            _world->setMethod(Method::EULER);
-                        }
-                        else {
-                            std::cerr << "Unknown method : " << value << std::endl;
-                            std::cerr << "\tAvailable methods : EULER, RUNGE_KUTTA" << std::endl;
-                        }
+                    readSimulation->_name = value;
+                }
+                else if (key == "method") {
+                    if (value == "RUNGE_KUTTA") {
+                        readSimulation->_world->setMethod(Method::RUNGE_KUTTA);
                     }
-                    //Constante de gravitation
-                    else if (key == "G") {
-                        try {
-                            double G = std::stod(value);
-                            _world->setGravityConstant(G);
-                        }
-                        catch (std::invalid_argument & e) {
-                            std::cerr << "Can't read parameter : G for the current scene." << std::endl;
-                        }
+                    else if (value == "EULER") {
+                        readSimulation->_world->setMethod(Method::EULER);
                     }
-                    //facteur de la constante de gravitation
-                    else if (key == "Gfactor") {
-                        try {
-                            double Gfactor = std::stod(value);
-                            _world->setGravityConstant(GRAVITY_CONSTANT * Gfactor);
-                        }
-                        catch (std::invalid_argument & e) {
-                            std::cerr << "Can't read parameter : G for the current scene." << std::endl;
-                        }
-                    }
-                    else if (key == "light.type") {
-                        if (value == "POINT") {
-                            light.setLightType(LIGHT_POINT);
-                        }
-                        else if (value == "SUN") {
-                            light.setLightType(LIGHT_SUN);
-                        }
-                        else {
-                            std::cerr << "Unknown light type : " << value << std::endl;
-                            std::cerr << "\tAvailable types : POINT, SUN." << std::endl;
-                        }
-                    }
-                    else if (key == "light.pos") {
-                        glm::vec3 lightPos;
-                        parseFloatVec3(value, lightPos, "light.pos");
-
-                        light.setLightPosition(lightPos.x, lightPos.y, lightPos.z);
+                    else {
+                        std::cerr << "Unknown method : " << value << std::endl;
+                        std::cerr << "\tAvailable methods : EULER, RUNGE_KUTTA" << std::endl;
                     }
                 }
+                //Constante de gravitation
+                else if (key == "G") {
+                    try {
+                        double G = std::stod(value);
+                        readSimulation->_world->setGravityConstant(G);
+                    }
+                    catch (std::invalid_argument & e) {
+                        std::cerr << "Can't read parameter : G for the current scene." << std::endl;
+                    }
+                }
+                //facteur de la constante de gravitation
+                else if (key == "Gfactor") {
+                    try {
+                        double Gfactor = std::stod(value);
+                        readSimulation->_world->setGravityConstant(GRAVITY_CONSTANT * Gfactor);
+                    }
+                    catch (std::invalid_argument & e) {
+                        std::cerr << "Can't read parameter : G for the current scene." << std::endl;
+                    }
+                }
+                else if (key == "light.type") {
+                    if (value == "POINT") {
+                        light.setLightType(LIGHT_POINT);
+                    }
+                    else if (value == "SUN") {
+                        light.setLightType(LIGHT_SUN);
+                    }
+                    else {
+                        std::cerr << "Unknown light type : " << value << std::endl;
+                        std::cerr << "\tAvailable types : POINT, SUN." << std::endl;
+                    }
+                }
+                else if (key == "light.pos") {
+                    glm::vec3 lightPos;
+                    parseFloatVec3(value, lightPos, "light.pos");
 
-                _scene->setLight(light);
+                    light.setLightPosition(lightPos.x, lightPos.y, lightPos.z);
+                }
             }
+
+            readSimulation->_scene->setLight(light);
         }
         //Line
         else {
@@ -250,7 +256,7 @@ void Simulation::parse(std::string loadedFile) {
                 //Paramétrage de la planète
                 Planet toAdd(name, body, render);
 
-                addPlanet(toAdd);
+                readSimulation->addPlanet(toAdd);
             }
         }
     }
@@ -315,6 +321,11 @@ void Simulation::setTrajectoryVisibility(bool visible) {
             planet.trajectory->setActive(visible);
         }
     }
+
+    //Propagation aux enfants
+    for (auto &child : _children) {
+        child->setTrajectoryVisibility(visible);
+    }
 }
 
 void Simulation::resetTrajectories() {
@@ -323,6 +334,11 @@ void Simulation::resetTrajectories() {
             planet.trajectory->reset();
         }
     }
+
+    //Propagation aux enfants
+    for (auto &child : _children) {
+        child->resetTrajectories();
+    }
 }
 
 void Simulation::setPlanetVisibility(bool visible) {
@@ -330,6 +346,11 @@ void Simulation::setPlanetVisibility(bool visible) {
         if (planet.render != nullptr) {
             planet.render->setActive(visible);
         }
+    }
+
+    //Propagation aux enfants
+    for (auto &child : _children) {
+        child->setPlanetVisibility(visible);
     }
 }
 
@@ -350,6 +371,12 @@ void Simulation::setTimeMultiplier(int multiplier) {
     if (multiplier > MAX_MULTIPLIER) multiplier = MAX_MULTIPLIER;
     if (multiplier < MIN_MULTIPLIER) multiplier = MIN_MULTIPLIER;
 
+    //Propagation aux enfants
+    for (auto &child : _children) {
+        child->setTimeMultiplier(multiplier);
+    }
+
+    //Traitement pour moi tout seul
     if (multiplier == _timeMultiplier) return;
 
     _timeMultiplier = multiplier;
@@ -368,6 +395,10 @@ void Simulation::decrementTimeMultiplier() {
 
 void Simulation::setPaused(bool paused) {
     _pause = paused;
+
+    for (auto &child : _children) {
+        child->setPaused(paused);
+    }
 }
 
 void Simulation::togglePaused() {
@@ -376,6 +407,10 @@ void Simulation::togglePaused() {
 
 void Simulation::setReverse(bool reverse) {
     _reverse = reverse;
+
+    for (auto &child : _children) {
+        child->setReverse(reverse);
+    }
 }
 
 void Simulation::toggleReverse() {
@@ -426,6 +461,12 @@ void Simulation::update(double time, bool printInfos) {
                 std::cout << planet.name << ":" << stringstream.str() << std::endl;
             }
         }
+    }
+
+
+    //Mise à jour des enfants
+    for (auto &child : _children) {
+        child->update(time, printInfos);
     }
 }
 
