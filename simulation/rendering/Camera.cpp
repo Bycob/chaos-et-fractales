@@ -78,6 +78,12 @@ void Traveling::update(Camera &camera) {
 
 
 
+void Camera::setRatio(float ratio) {
+	if (abs(ratio) < 0.0001) {
+		ratio = 0.0001;
+	}
+	this->ratio = ratio;
+}
 
 void Camera::setEye(float eyeX, float eyeY, float eyeZ) {
     this->eyeX = eyeX;

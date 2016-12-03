@@ -31,10 +31,7 @@ public :
         this->fov = fov;
     }
 
-    void setRatio(float ratio) {
-        this->ratio = ratio;
-    }
-
+	void setRatio(float ratio);
     void setEye(float eyeX, float eyeY, float eyeZ);
     void setCenter(float centerX, float centerY, float centerZ);
     void setUp(float upX, float upY, float upZ);
