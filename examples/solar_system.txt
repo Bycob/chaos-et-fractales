@@ -15,7 +15,7 @@
     // - light.pos : un triplet (x, y, z) déterminant la position de la lumière si elle est
     //    ponctuelle (POINT), ou sa direction si elle est linéaire (SUN)
 
-#name=solar_system ; method = EULER ; Gfactor=1e3 ; light.type= POINT ; light.pos=(0, 0, 0)
+#name=solar_system ; origin = 0 ; method = EULER ; Gfactor=1e3 ; light.type= POINT ; light.pos=(0, 0, 0)
 
     //On déclare ensuite les corps, un par ligne.
 

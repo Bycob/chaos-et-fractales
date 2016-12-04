@@ -134,6 +134,15 @@ void Simulation::parse(std::string loadedFile) {
                         std::cerr << "\tAvailable methods : EULER, RUNGE_KUTTA" << std::endl;
                     }
                 }
+                //Objet à l'origine de la simulation.
+                else if (key == "origin") {
+                    try {
+                        int origin = std::stoi(value);
+                        readSimulation->_originObject = origin;
+                    } catch (std::invalid_argument & e) {
+                        std::cerr << "Can't read parameter : origin for the current scene." << std::endl;
+                    }
+                }
                 //Constante de gravitation
                 else if (key == "G") {
                     try {
