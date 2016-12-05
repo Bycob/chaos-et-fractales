@@ -16,6 +16,13 @@ public :
 RenderableTrajectory(int maxPointCount = DEFAULT_MAX_POINT_COUNT);
 
     void setColor(float r, float g, float b);
+    glm::vec3 getColor() {
+        return this->color;
+    }
+    void setAlpha(float alpha);
+    float getAlpha() {
+        return this->alpha;
+    }
     void addPoint(float x, float y, float z);
     void reset();
 
@@ -28,6 +35,7 @@ private :
     std::list<glm::vec3> points;
 
     glm::vec3 color;
+    float alpha = 1;
 
     GLuint tangentBuffer;
 

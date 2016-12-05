@@ -33,7 +33,6 @@
 
 //TODO TASK Afficher le nombre d'année moyen calculé par secondes.
 //TODO TASK Afficher la liste des commandes en appuyant sur Enter
-//TODO TASK Shadows trajectoires
 
 //DECLARATIONS
 
@@ -243,7 +242,7 @@ void addMooreSystem() {
     runtime::simulation->addPlanet({"body3", body3body, body3Render});
 
     //couleurs des trajectoires (temporaires)
-    runtime::simulation->set3BodiesSpecial();
+    runtime::simulation->set3BodiesSpecialTrajectories();
 }
 
 

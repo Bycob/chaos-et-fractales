@@ -11,6 +11,7 @@
 #include "FileBuffer.h"
 
 #define SHADOW_ALPHA 0.4f
+#define SHADOW_TRAJECTORY_ALPHA 0.4f
 
 #define DEFAULT_PHYSICAL_STEP 0.0009765625
 #define BASE_TIME_SCALE 0.1
@@ -41,7 +42,7 @@ public :
     Simulation(std::string name, std::string loadFile);
 
     std::string getFilename() {return _filename;}
-    void set3BodiesSpecial();
+    void set3BodiesSpecialTrajectories();
 
     Scene & scene() {return *this->_scene;}
     World & world() {return *this->_world;}
@@ -113,6 +114,7 @@ private :
     Simulation(const Simulation * parent);
 
     void parse(std::string loadedFile);
+    void setPlanetShadow(Planet & planet, bool shadow);
 
     /// Si la simulation a été créée à partir d'un fichier, contient
     /// le nom de ce fichier.

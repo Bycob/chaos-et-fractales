@@ -201,7 +201,7 @@ void Simulation::parse(std::string loadedFile) {
             std::string texture = "";
             glm::vec3 ambient(0.2, 0.2, 0.2);
             glm::vec3 diffuse(1, 1, 1);
-            glm::vec3 specular(1, 1, 1);
+            glm::vec3 specular(0, 0, 0);
             bool emit = false;
 
             for (std::string &param : params) {
@@ -286,20 +286,21 @@ void Simulation::parse(std::string loadedFile) {
     }
 
     if (_planets.size() == 3) {
-        set3BodiesSpecial();
+        set3BodiesSpecialTrajectories();
     }
 }
 
-void Simulation::set3BodiesSpecial() {
+void Simulation::set3BodiesSpecialTrajectories() {
     if (_planets.size() < 3) return;
 
-    _planets[0].trajectory->setColor(1, 0, 0);
+    // != RVB, car l'oeil humain voit moins bien le bleu et le rouge
+    _planets[0].trajectory->setColor(1, 0.3, 0.3);
     _planets[1].trajectory->setColor(0, 1, 0);
-    _planets[2].trajectory->setColor(0, 0, 1);
+    _planets[2].trajectory->setColor(0.4, 0.4, 1);
 
-    _planets[0].render->getMaterial().setSpecular(1, 1, 1);
-    _planets[1].render->getMaterial().setSpecular(1, 1, 1);
-    _planets[2].render->getMaterial().setSpecular(1, 1, 1);
+    for (auto &child : _children) {
+        child->set3BodiesSpecialTrajectories();
+    }
 }
 
 void Simulation::addPlanet(Planet planet) {
@@ -310,7 +311,6 @@ void Simulation::addPlanet(Planet planet) {
     if (planet.render != nullptr) {
         //Ajout du rendu principal
         _scene->addObject(planet.render);
-        planet.render->getMaterial().setSpecular(0, 0, 0);
 
         //Ajout de la trajectoire
         _scene->addObject(planet.trajectory);
@@ -318,9 +318,7 @@ void Simulation::addPlanet(Planet planet) {
         planet.trajectory->setColor(color.r, color.g, color.b);
 
         //Si la simulation est shadow, application de ce paramètres à la nouvelle planète
-        if (_isShadow) {
-            planet.render->getMaterial().setAlpha(SHADOW_ALPHA);
-        }
+        setPlanetShadow(planet, this->_isShadow);
     }
     planet.buffer->setFilename(_name + "/" + planet.name);
 }
@@ -385,16 +383,22 @@ void Simulation::setPlanetVisibility(bool visible) {
     }
 }
 
+void Simulation::setPlanetShadow(Planet & planet, bool shadow) {
+    if (shadow) {
+        planet.render->getMaterial().setAlpha(SHADOW_ALPHA);
+        planet.trajectory->setAlpha(SHADOW_TRAJECTORY_ALPHA);
+    }
+    else {
+        planet.render->getMaterial().setAlpha(1.0f);
+        planet.trajectory->setAlpha(1.0f);
+    }
+}
+
 void Simulation::setShadowSimulation(bool shadow) {
     _isShadow = shadow;
 
     for (auto &planet : this->_planets) {
-        if (_isShadow) {
-            planet.render->getMaterial().setAlpha(SHADOW_ALPHA);
-        }
-        else {
-            planet.render->getMaterial().setAlpha(1.0f);
-        }
+        setPlanetShadow(planet, shadow);
     }
 }
 

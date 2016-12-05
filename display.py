@@ -75,13 +75,13 @@ if __name__ == '__main__' :
 		plot_from_cin()
 	else :
 		plt.axis('equal')
-		"""plot_from_file('earth_', 'r')
-		plot_from_file('mars_', 'g')
-		plot_from_file('sun_', 'b')
-		plot_from_file('jupiter_', 'b')
+		plot_from_file('files/earth', 'r')
+		plot_from_file('files/mars', 'g')
+		plot_from_file('files/sun', 'b')
+		plot_from_file('files/jupiter', 'b')
 		"""
 		plot_from_file('files/body1', 'g')
 		plot_from_file('files/body2', 'b')
-		plot_from_file('files/body3', 'r')
+		plot_from_file('files/body3', 'r')"""
 
 		plt.show()

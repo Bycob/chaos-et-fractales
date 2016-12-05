@@ -17,6 +17,10 @@ void RenderableTrajectory::setColor(float r, float g, float b) {
     this->color = glm::vec3(r, g, b);
 }
 
+void RenderableTrajectory::setAlpha(float alpha) {
+    this->alpha = alpha;
+}
+
 void RenderableTrajectory::addPoint(float x, float y, float z) {
     points.push_back(glm::vec3(x, y, z));
 
@@ -46,6 +50,7 @@ void RenderableTrajectory::render(Context *context, Scene *scene) {
     context->setCurrentProgram("trajectory");
 
     context->program().setUniform3f("color", color.r, color.g, color.b);
+    context->program().setUniform1f("alpha", alpha);
     context->program().setUniform1i("count", points.size());
 
     glDepthMask(GL_FALSE);
