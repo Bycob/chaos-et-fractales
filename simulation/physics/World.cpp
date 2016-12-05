@@ -42,32 +42,17 @@ vec3d World::getSystemPosition() {
     return result;
 }
 
-void World::step(double seconds, int increment) {
-    time += seconds;
+void World::step(double seconds, int multiplier) {
+    time += seconds * multiplier;
 
-    double sign = seconds > 0 ? 1 : -1;
-    seconds = fabs(seconds);
-    double timeUnit = fabs(seconds / increment);
-    double threshold = timeUnit * 1.5;
-    bool simulation = true;
-
-    while (simulation) {
-        //Calcul du pas
-        if (seconds < threshold) {
-            timeUnit = seconds;
-            simulation = false;
-        }
-        else {
-            seconds -= timeUnit;
-        }
-
+    for (int i = 0 ; i < multiplier ; i++) {
         //CALCUL DES NOUVELLES VARIABLES POUR TOUS LES CORPS
         switch (method) {
         case Method::EULER :
-            euler(sign * timeUnit);
+            euler(seconds);
             break;
         case Method::RUNGE_KUTTA :
-            rungekutta3Bodies(sign * timeUnit);
+            rungekutta3Bodies(seconds);
             break;
         }
     }

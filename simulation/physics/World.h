@@ -38,8 +38,9 @@ public :
     vec3d getSystemLinearMomentum();
     vec3d getSystemPosition();
 
-    ///Effectue la simulation sur le nombre de secondes passées en paramètre.
-    void step(double seconds, int increment = 1);
+    ///Effectue la simulation sur le nombre de secondes passé en paramètre,
+    /// multiplié par le second paramètre de la fonction.
+    void step(double seconds, int multiplier);
 private :
     //Différentes méthodes de calcul
     void euler(double t);

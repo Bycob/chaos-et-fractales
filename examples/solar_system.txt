@@ -19,6 +19,8 @@
 
     //On déclare ensuite les corps, un par ligne.
 
+    //Ici les masses sont exprimées en 1e21 kg, les distances en 1e10 m et le temps en
+
 name=sun ; mass= 2e9; position=(0, 0, 0) ; speed= (0, 0, 0) ; radius = 3; texture = assets/sun.png ; ambient= (0.85, 0.25, 0.1) ; emit=true
 name=earth ; mass = 6000 ; position=(-15, 0, 0) ; speed=(0, -2.9, 0) ; radius = 0.8 ; texture=assets/earth.png
 name=mars ; mass =600 ; position= (0, -24.9, 0) ; speed= (2.19, 0, 0) ; radius = 0.7 ; texture =assets/mars.png

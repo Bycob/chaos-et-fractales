@@ -456,8 +456,9 @@ void Simulation::update(double time, bool printInfos) {
     //Mise à jour du monde (précision ~ 1h) t*10e6
     const double timeScale = _timeScale * time * (_reverse ? -1 : 1);
     const double baseStep = _physicalStep;
-    _world->step(timeScale, (int) fabs(timeScale / baseStep));
+    _world->step(baseStep, (int) fabs(timeScale / baseStep));
 
+    // Affichage
     vec3d speed = _world->getSystemLinearMomentum();
     //printf("%.20f %.20f %.20f\n", speed.x, speed.y, speed.z);
 

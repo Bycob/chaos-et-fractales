@@ -31,6 +31,10 @@
 #define COMMAND_COUNT 5
 #define HELP_COMMAND_SIZE 40
 
+//TODO TASK Afficher le nombre d'année moyen calculé par secondes.
+//TODO TASK Afficher la liste des commandes en appuyant sur Enter
+//TODO TASK Shadows trajectoires
+
 //DECLARATIONS
 
 namespace runtime {
@@ -170,6 +174,7 @@ int main(int argc, char** argv) {
 void recreateScene() {
     //On effectue les derniers traitements
     runtime::currentPlanet = 0;
+    runtime::simulation->writeFiles();
 
     //On raffraichit la scène.
     createScene();
