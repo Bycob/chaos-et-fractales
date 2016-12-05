@@ -52,7 +52,7 @@ void World::step(double seconds, int multiplier) {
             euler(seconds);
             break;
         case Method::RUNGE_KUTTA :
-            rungekutta3Bodies(seconds);
+            rungekuttaNBodies(seconds);
             break;
         }
     }
@@ -142,6 +142,60 @@ void World::rungekutta3Bodies(double t) {
     bodies[2]->vy += (t / 6) * (k1[2][3] + 2 * k2[2][3] + 2 * k3[2][3] + k4[2][3]);
 }
 
+Matrixdv World::rungekuttaFuncNBodies(Matrixdv &in) {
+    Matrixdv result(6, this->bodies.size());
+
+    for (int i = 0 ; i < this->bodies.size() ; i++) {
+        result[i][0] = in[i][3];
+        result[i][1] = in[i][4];
+        result[i][2] = in[i][5];
+
+        for (int j = 0 ; j < this->bodies.size() ; j++) {
+            if (i == j) continue;
+
+            double length = bodies[i]->distance(*bodies[j]);
+            if (length == 0) continue;
+
+            result[i][3] = result[i][3] + G * bodies[j]->mass * (in[j][0] - in[i][0]) / (length * length * length);
+            result[i][4] = result[i][4] + G * bodies[j]->mass * (in[j][1] - in[i][1]) / (length * length * length);
+            result[i][5] = result[i][5] + G * bodies[j]->mass * (in[j][2] - in[i][2]) / (length * length * length);
+        }
+    }
+
+    return result;
+}
+
 void World::rungekuttaNBodies(double t) {
 
+    //Matrification
+    Matrixdv M(6, this->bodies.size());
+    for (int i = 0 ; i < this->bodies.size() ; i++) {
+        auto body = this->bodies[i];
+        M[i][0] = body->x;
+        M[i][1] = body->y;
+        M[i][2] = body->z;
+        M[i][3] = body->vx;
+        M[i][4] = body->vy;
+        M[i][5] = body->vz;
+    }
+
+    //Runge kutta
+    auto k1 = rungekuttaFuncNBodies(M);
+    auto M2 = M + k1 * (t / 2);
+    auto k2 = rungekuttaFuncNBodies(M2);
+    auto M3 = M + k2 * (t / 2);
+    auto k3 = rungekuttaFuncNBodies(M3);
+    auto M4 = M + k3 * t;
+    auto k4 = rungekuttaFuncNBodies(M4);
+
+    //Dematrification
+    for (int i = 0 ; i < this->bodies.size() ; i++) {
+        auto & body = this->bodies[i];
+        body->x += (t / 6) * (k1[i][0] + 2 * k2[i][0] + 2 * k3[i][0] + k4[i][0]);
+        body->y += (t / 6) * (k1[i][1] + 2 * k2[i][1] + 2 * k3[i][1] + k4[i][1]);
+        body->z += (t / 6) * (k1[i][2] + 2 * k2[i][2] + 2 * k3[i][2] + k4[i][2]);
+        body->vx += (t / 6) * (k1[i][3] + 2 * k2[i][3] + 2 * k3[i][3] + k4[i][3]);
+        body->vy += (t / 6) * (k1[i][4] + 2 * k2[i][4] + 2 * k3[i][4] + k4[i][4]);
+        body->vz += (t / 6) * (k1[i][5] + 2 * k2[i][5] + 2 * k3[i][5] + k4[i][5]);
+    }
 }

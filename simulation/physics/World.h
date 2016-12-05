@@ -11,8 +11,11 @@
 #include <memory>
 #include <glm/glm.hpp>
 
+#include "Matrix.h"
+
 class Body;
 
+typedef Matrix<double> Matrixdv;
 typedef glm::tvec3<double, glm::highp> vec3d;
 typedef glm::tmat3x4<double, glm::highp> mat3x4d;
 
@@ -48,6 +51,7 @@ private :
     mat3x4d rungekuttaFunc3Bodies(mat3x4d & in);
     void rungekutta3Bodies(double t);
 
+    Matrixdv rungekuttaFuncNBodies(Matrixdv & in);
     void rungekuttaNBodies(double t);
 
 
