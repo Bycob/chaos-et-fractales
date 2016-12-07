@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by louis on 13/11/16.
 //
 
@@ -130,6 +130,20 @@ inline bool startsWith(const std::string & item, const std::string & prefix) {
     }
 
     return true;
+}
+
+inline bool endsWith(const std::string & item, const std::string & suffix) {
+	if (item.size() < suffix.size()) {
+		return false;
+	}
+
+	for (int i = item.size(), j = suffix.size(); j >= 0; i--, j--) {
+		if (item[i] != suffix[j]) {
+			return false;
+		}
+	}
+
+	return true;
 }
 
 #endif // SIMULATION_UTILS_H
