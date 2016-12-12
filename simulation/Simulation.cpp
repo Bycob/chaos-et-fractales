@@ -1,4 +1,4 @@
-//
+﻿//
 // Created by louis on 19/11/16.
 //
 
@@ -458,8 +458,8 @@ void Simulation::update(double time, bool printInfos) {
     if (_pause) return;
     
     //Mise à jour du monde (précision ~ 1h) t*10e6
-    const double timeScale = _timeScale * time * (_reverse ? -1 : 1);
-    const double baseStep = _physicalStep;
+    const double timeScale = _timeScale * time;
+    const double baseStep = _physicalStep * (_reverse ? -1 : 1);
     _world->step(baseStep, (int) fabs(timeScale / baseStep));
 
     // Affichage
