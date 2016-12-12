@@ -13,7 +13,7 @@
 
 class RenderableTrajectory : public Renderable {
 public :
-RenderableTrajectory(int maxPointCount = DEFAULT_MAX_POINT_COUNT);
+    RenderableTrajectory(int maxPointCount = DEFAULT_MAX_POINT_COUNT);
 
     void setColor(float r, float g, float b);
     glm::vec3 getColor() {

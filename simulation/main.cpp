@@ -126,7 +126,7 @@ void printHelp() {
             << "Usage : \n\tsimulation [arguments...]" << std::endl << std::endl
             << "Commandes disponibles : " << std::endl;
 
-    printCommandDict(commands, COMMAND_COUNT, HELP_COMMAND_SIZE);
+    printCommandDict(commands, COMMAND_COUNT, ':', HELP_COMMAND_SIZE);
     std::cout << std::endl;
 }
 
@@ -418,10 +418,31 @@ void input(GLFWwindow * window) {
     }
 }
 
-#define KEY_COMMAND_COUNT
+#define KEY_COMMAND_COUNT 15
+#define KEY_COMMAND_SIZE 20
 
 void printKeys() {
     std::cout << "\nCommandes de la caméra : " << std::endl;
+
+    std::string commands[KEY_COMMAND_COUNT][2] = {
+            {"Enter", "Affiche ce message"},
+            {"Ctrl+Shift+Enter", "Réinitialise la simulation courante"},
+            {"Tab", "Passer à la simulation suivante"},
+            {"Shift+Tab", "Passer à la simulation précédente"},
+            {"Ctrl+Q", "Quitter l'application"},
+            {"Space", "Met en pause ou relance la simulation"},
+            {"B", "Change l'écoulement du temps du futur vers le passé."},
+            {"F", "Rétablit l'équilibre temporel"},
+            {"+", "Accélère la simulation"},
+            {"-", "Ralentit la simulation"},
+            {"P", "Fait disparaître / réapparaitre les astres"},
+            {"T", "Fait disparaître / réapparaitre les trajectoires"},
+            {"Ctrl+T", "Réinitialise les trajectoires"},
+            {"0", "Met la caméra en vue de dessus"},
+            {"[1-9]", "Centre la caméra sur la planète portant le numéro indiqué"}
+    };
+
+    printCommandDict(commands, KEY_COMMAND_COUNT, ':', KEY_COMMAND_SIZE);
 }
 
 void glfwKeyCallback(GLFWwindow *window, int key, int scancode, int action, int mods) {
