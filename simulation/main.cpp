@@ -31,6 +31,8 @@
 #define COMMAND_COUNT 5
 #define HELP_COMMAND_SIZE 40
 
+#define DISPLAY_INFOS_PERIOD 30
+
 //TODO TASK Afficher le nombre d'année moyen calculé par secondes.
 //TODO TASK Afficher la liste des commandes en appuyant sur Enter
 
@@ -70,7 +72,7 @@ namespace parameters {
 
     std::vector<std::string> filenames;
 
-    int fps = 50;
+    double fps = 50;
 }
 
 
@@ -84,6 +86,7 @@ void addMooreSystem();
 
 
 
+void printSystemInfos();
 void printHelp();
 /** Cette méthode est le coeur du thread graphique,
  * Elle crée la fenetre, charge les ressources, effectue
@@ -114,7 +117,7 @@ void printHelp() {
                     "Cette option est adaptée à une utilisation en pipe avec l'utilitaire display.py."},
             {"--files, -f file1[;file2[;...]]", "Indique les fichiers de description à partir desquels "
                 "la simulation sera construite."},
-            {"--tick, -t value", "Définit la résolution graphique de la simulation, c'est-à-dire "
+            {"--timescale, -t value", "Définit la résolution graphique de la simulation, c'est-à-dire "
                 "l'espace entre deux points enregistrés dans le fichier. Cette option n'est disponible "
                 "qu'en mode --norender."}
     };
@@ -157,6 +160,17 @@ int main(int argc, char** argv) {
             printHelp();
             exit(0);
         }
+		else if (arg == "--timescale" || arg == "-t") {
+			try {
+				if (param != "" && !parameters::enableRender) {
+					double timescale = std::stod(param);
+					parameters::fps = 1.0 / timescale;
+				}
+			}
+			catch (std::invalid_argument & err) {
+				std::cout << err.what() << std::endl;
+			}
+		}
     }
 
     createScene();
@@ -253,6 +267,13 @@ void addMooreSystem() {
 
 
 
+void printSystemInfos() {
+	std::cout << std::endl;
+	std::cout << "Informations sur le système :" << std::endl;
+	vec3d p = runtime::simulation->world().getSystemLinearMomentum();
+	std::cout << "Quantité de mouvement du système : " << p.x << " " << p.y << " " << p.z << std::endl;
+	std::cout << "Temps écoulé en années : " << runtime::simulation->world().getTime() / 3600 / 24 / 365.25 << std::endl;
+}
 
 void start() {
     runtime::running = true;
@@ -274,12 +295,17 @@ void start() {
         std::signal(SIGINT, sigstop);
         std::signal(SIGTERM, sigstop);
 
-        std::cout << "Démarrage de la simulation. Ctrl-C pour interrompre la simulation." << std::endl;
+        std::cout << "Démarrage de la simulation avec un pas de " << (1.0 / parameters::fps) << ". Ctrl-C pour interrompre la simulation." << std::endl;
     }
+
+	if (!parameters::enableRender && !parameters::pipeMode) {
+		printSystemInfos();
+	}
+
+	auto lastPrintInfos = std::chrono::system_clock::now();
 
     while (runtime::running) {
         auto before = std::chrono::system_clock::now();
-
         runtime::simulation->update(1.0 / parameters::fps, parameters::pipeMode);
 
         if (parameters::enableRender) {
@@ -299,17 +325,27 @@ void start() {
 
             //Dormir
             auto after = std::chrono::system_clock::now();
+			//Temps écoulé en secondes
             float elapsed = std::chrono::duration_cast<std::chrono::microseconds>(after - before).count() / 1000000.0f;
 
-            sleep(std::max(1.0f / parameters::fps - elapsed, 0.0f));
+            sleep(std::max(1.0f / (float) parameters::fps - elapsed, 0.0f));
             //std::cout << elapsed << std::endl; // -> profiling
         }
         else {
-
             // Pour laisser le temps à python de respirer
             if (parameters::pipeMode) {
                 sleep(30);
             }
+			else {
+				auto after = std::chrono::system_clock::now();
+				//Temps écoulé en secondes
+				float elapsed = std::chrono::duration_cast<std::chrono::microseconds>(after - lastPrintInfos).count() / 1000000.0f;
+				
+				if (elapsed > DISPLAY_INFOS_PERIOD) {
+					lastPrintInfos = std::chrono::system_clock::now();
+					printSystemInfos();
+				}
+			}
         }
     }
 
