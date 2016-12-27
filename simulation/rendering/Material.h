@@ -42,7 +42,7 @@ private :
     float specularIntensity;
     float specularHardness;
 
-    bool emit;
+    bool emit = false;
 };
 
 
