@@ -12,8 +12,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/)
 
 file(GLOB_RECURSE
         SIMULATION_SOURCES
-        ${CMAKE_CURRENT_SOURCE_DIR}/simulation/*.cpp
-		${CMAKE_CURRENT_SOURCE_DIR}/simulation/*.h)
+        ${CMAKE_CURRENT_SOURCE_DIR}/sources/*.cpp
+	${CMAKE_CURRENT_SOURCE_DIR}/sources/*.h)
 
 file(GLOB_RECURSE
         GLAD_SOURCES
@@ -30,7 +30,7 @@ target_link_libraries(simulation glfw ${OpenCV_LIBS})
 #copie des dossiers
 add_custom_command(TARGET simulation PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${CMAKE_SOURCE_DIR}/simulation/rendering/shaders $<TARGET_FILE_DIR:simulation>/shaders)
+        ${CMAKE_SOURCE_DIR}/sources/rendering/shaders $<TARGET_FILE_DIR:simulation>/shaders)
 
 add_custom_command(TARGET simulation PRE_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory
